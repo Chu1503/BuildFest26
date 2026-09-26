@@ -1,0 +1,1285 @@
+{
+  "nodes": {
+    "3610": {
+      "p": [
+        27.599999999999998,
+        9,
+        -18.814
+      ],
+      "floor": 3,
+      "pixel": [
+        1020,
+        451
+      ],
+      "name": "Classroom 3610"
+    },
+    "4616": {
+      "p": [
+        12.604,
+        13.5,
+        -7.406
+      ],
+      "floor": 4,
+      "pixel": [
+        659,
+        661
+      ],
+      "name": "Classroom 4616"
+    },
+    "5618": {
+      "p": [
+        12.374,
+        18,
+        -7.59
+      ],
+      "floor": 5,
+      "pixel": [
+        639,
+        685
+      ],
+      "name": "Classroom 5618"
+    },
+    "6618": {
+      "p": [
+        12.788,
+        22.5,
+        -7.038
+      ],
+      "floor": 6,
+      "pixel": [
+        668,
+        697
+      ],
+      "name": "Classroom 6618"
+    },
+    "7560": {
+      "p": [
+        1.702,
+        27,
+        -18.814
+      ],
+      "floor": 7,
+      "pixel": [
+        421,
+        409
+      ],
+      "name": "Seminar Room 7560"
+    },
+    "entrance": {
+      "p": [
+        -15.216000000000001,
+        0,
+        0.5760000000000001
+      ],
+      "floor": 1,
+      "pixel": [
+        183,
+        862
+      ],
+      "name": "Orchard Street entrance"
+    },
+    "ramp": {
+      "p": [
+        -12.96,
+        0,
+        -2.016
+      ],
+      "floor": 1,
+      "pixel": [
+        230,
+        808
+      ],
+      "name": "Ramp beside the three steps"
+    },
+    "rampTop": {
+      "p": [
+        -8.688,
+        0,
+        -6.432
+      ],
+      "floor": 1,
+      "pixel": [
+        319,
+        716
+      ],
+      "name": "Top of the entrance ramp"
+    },
+    "lobby": {
+      "p": [
+        -6.048,
+        0,
+        -5.5680000000000005
+      ],
+      "floor": 1,
+      "pixel": [
+        374,
+        734
+      ],
+      "name": "Main lobby"
+    },
+    "steps": {
+      "p": [
+        -10.176,
+        0,
+        -0.192
+      ],
+      "floor": 1,
+      "pixel": [
+        288,
+        846
+      ],
+      "name": "Three entrance steps"
+    },
+    "university": {
+      "p": [
+        26.688,
+        0,
+        -28.080000000000002
+      ],
+      "floor": 1,
+      "pixel": [
+        1056,
+        265
+      ],
+      "name": "University Avenue entrance"
+    },
+    "heart": {
+      "p": [
+        15.6,
+        0,
+        -18.48
+      ],
+      "floor": 1,
+      "pixel": [
+        825,
+        465
+      ],
+      "name": "Morgridge Hall Heart"
+    },
+    "main": {
+      "p": [
+        6.384,
+        0,
+        -10.32
+      ],
+      "floor": 1,
+      "pixel": [
+        633,
+        635
+      ],
+      "name": "Central hall"
+    },
+    "e1": {
+      "p": [
+        -1.104,
+        0,
+        -1.824
+      ],
+      "floor": 1,
+      "pixel": [
+        477,
+        812
+      ],
+      "name": "Elevator lobby · Floor 1"
+    },
+    "auditorium": {
+      "p": [
+        -3.36,
+        0,
+        -14.448
+      ],
+      "floor": 1,
+      "pixel": [
+        430,
+        549
+      ],
+      "name": "Hello World Auditorium · 1570"
+    },
+    "heartWest": {
+      "p": [
+        11.472,
+        0,
+        -18.432000000000002
+      ],
+      "floor": 1,
+      "pixel": [
+        739,
+        466
+      ],
+      "name": "Atrium-side hall"
+    },
+    "e0": {
+      "p": [
+        -1.026,
+        -4.5,
+        -1.444
+      ],
+      "floor": 0,
+      "pixel": [
+        593,
+        1102
+      ],
+      "name": "Elevator lobby · Garden level"
+    },
+    "e2": {
+      "p": [
+        -1.242,
+        4.5,
+        -1.748
+      ],
+      "floor": 2,
+      "pixel": [
+        463,
+        892
+      ],
+      "name": "Elevator lobby · Floor 2"
+    },
+    "e3": {
+      "p": [
+        -1.242,
+        9,
+        -1.748
+      ],
+      "floor": 3,
+      "pixel": [
+        393,
+        822
+      ],
+      "name": "Elevator lobby · Floor 3"
+    },
+    "e4": {
+      "p": [
+        -1.242,
+        13.5,
+        -1.748
+      ],
+      "floor": 4,
+      "pixel": [
+        358,
+        784
+      ],
+      "name": "Elevator lobby · Floor 4"
+    },
+    "e5": {
+      "p": [
+        -1.242,
+        18,
+        -1.748
+      ],
+      "floor": 5,
+      "pixel": [
+        343,
+        812
+      ],
+      "name": "Elevator lobby · Floor 5"
+    },
+    "e6": {
+      "p": [
+        -1.242,
+        22.5,
+        -1.748
+      ],
+      "floor": 6,
+      "pixel": [
+        363,
+        812
+      ],
+      "name": "Elevator lobby · Floor 6"
+    },
+    "e7": {
+      "p": [
+        -1.242,
+        27,
+        -1.748
+      ],
+      "floor": 7,
+      "pixel": [
+        357,
+        780
+      ],
+      "name": "Elevator lobby · Floor 7"
+    },
+    "s0": {
+      "p": [
+        -3.4579999999999997,
+        -4.5,
+        0.874
+      ],
+      "floor": 0,
+      "pixel": [
+        529,
+        1163
+      ],
+      "name": "Stair landing · Floor 0"
+    },
+    "s1": {
+      "p": [
+        -2.88,
+        0,
+        1.248
+      ],
+      "floor": 1,
+      "pixel": [
+        440,
+        876
+      ],
+      "name": "Stair landing · Floor 1"
+    },
+    "s2": {
+      "p": [
+        -3.036,
+        4.5,
+        0.598
+      ],
+      "floor": 2,
+      "pixel": [
+        424,
+        943
+      ],
+      "name": "Stair landing · Floor 2"
+    },
+    "s3": {
+      "p": [
+        -2.116,
+        9,
+        0.828
+      ],
+      "floor": 3,
+      "pixel": [
+        374,
+        878
+      ],
+      "name": "Stair landing · Floor 3"
+    },
+    "s4": {
+      "p": [
+        -2.392,
+        13.5,
+        0.69
+      ],
+      "floor": 4,
+      "pixel": [
+        333,
+        837
+      ],
+      "name": "Stair landing · Floor 4"
+    },
+    "s5": {
+      "p": [
+        -3.128,
+        18,
+        0.552
+      ],
+      "floor": 5,
+      "pixel": [
+        302,
+        862
+      ],
+      "name": "Stair landing · Floor 5"
+    },
+    "s6": {
+      "p": [
+        -2.53,
+        22.5,
+        0.598
+      ],
+      "floor": 6,
+      "pixel": [
+        335,
+        863
+      ],
+      "name": "Stair landing · Floor 6"
+    },
+    "s7": {
+      "p": [
+        -2.944,
+        27,
+        1.012
+      ],
+      "floor": 7,
+      "pixel": [
+        320,
+        840
+      ],
+      "name": "Stair landing · Floor 7"
+    },
+    "library": {
+      "p": [
+        -8.878,
+        4.5,
+        -3.266
+      ],
+      "floor": 2,
+      "pixel": [
+        297,
+        859
+      ],
+      "name": "Commons & Library · Floor 2"
+    },
+    "info": {
+      "p": [
+        -3.91,
+        4.5,
+        -2.346
+      ],
+      "floor": 2,
+      "pixel": [
+        405,
+        879
+      ],
+      "name": "Information desk"
+    },
+    "south2": {
+      "p": [
+        -9.706,
+        4.5,
+        4.784
+      ],
+      "floor": 2,
+      "pixel": [
+        279,
+        1034
+      ],
+      "name": "South corridor · Floor 2"
+    },
+    "southHall2": {
+      "p": [
+        -10.028,
+        4.5,
+        14.812
+      ],
+      "floor": 2,
+      "pixel": [
+        272,
+        1252
+      ],
+      "name": "Classroom corridor"
+    },
+    "door2532": {
+      "p": [
+        -13.34,
+        4.5,
+        16.284
+      ],
+      "floor": 2,
+      "pixel": [
+        200,
+        1284
+      ],
+      "name": "Outside Classroom 2532"
+    },
+    "room": {
+      "p": [
+        -13.34,
+        4.5,
+        18.032
+      ],
+      "floor": 2,
+      "pixel": [
+        200,
+        1322
+      ],
+      "name": "Classroom 2532"
+    },
+    "door2522": {
+      "p": [
+        -3.4499999999999997,
+        4.5,
+        16.284
+      ],
+      "floor": 2,
+      "pixel": [
+        415,
+        1284
+      ],
+      "name": "Outside Classroom 2522"
+    },
+    "consult": {
+      "p": [
+        -3.4499999999999997,
+        4.5,
+        18.032
+      ],
+      "floor": 2,
+      "pixel": [
+        415,
+        1322
+      ],
+      "name": "Classroom 2522"
+    },
+    "bHall": {
+      "p": [
+        -5.396,
+        -4.5,
+        -8.93
+      ],
+      "floor": 0,
+      "pixel": [
+        478,
+        905
+      ],
+      "name": "Garden level corridor"
+    },
+    "bOpen": {
+      "p": [
+        -5.32,
+        -4.5,
+        -20.14
+      ],
+      "floor": 0,
+      "pixel": [
+        480,
+        610
+      ],
+      "name": "Garden level lobby"
+    },
+    "b2550": {
+      "p": [
+        -4.636,
+        -4.5,
+        -24.548
+      ],
+      "floor": 0,
+      "pixel": [
+        498,
+        494
+      ],
+      "name": "Classroom B2550"
+    },
+    "hall3": {
+      "p": [
+        7.6819999999999995,
+        9,
+        -1.748
+      ],
+      "floor": 3,
+      "pixel": [
+        587,
+        822
+      ],
+      "name": "Main corridor · Floor 3"
+    },
+    "east3": {
+      "p": [
+        28.566,
+        9,
+        -17.204
+      ],
+      "floor": 3,
+      "pixel": [
+        1041,
+        486
+      ],
+      "name": "East corridor · Floor 3"
+    },
+    "hall4": {
+      "p": [
+        7.6819999999999995,
+        13.5,
+        -1.748
+      ],
+      "floor": 4,
+      "pixel": [
+        552,
+        784
+      ],
+      "name": "Main corridor · Floor 4"
+    },
+    "hall5": {
+      "p": [
+        7.6819999999999995,
+        18,
+        -1.748
+      ],
+      "floor": 5,
+      "pixel": [
+        537,
+        812
+      ],
+      "name": "Main corridor · Floor 5"
+    },
+    "hall6": {
+      "p": [
+        7.6819999999999995,
+        22.5,
+        -1.748
+      ],
+      "floor": 6,
+      "pixel": [
+        557,
+        812
+      ],
+      "name": "Main corridor · Floor 6"
+    },
+    "hall7": {
+      "p": [
+        7.636,
+        27,
+        0.644
+      ],
+      "floor": 7,
+      "pixel": [
+        550,
+        832
+      ],
+      "name": "Main corridor · Floor 7"
+    },
+    "north7": {
+      "p": [
+        7.13,
+        27,
+        -14.168
+      ],
+      "floor": 7,
+      "pixel": [
+        539,
+        510
+      ],
+      "name": "Seminar corridor"
+    }
+  },
+  "edges": [
+    {
+      "a": "entrance",
+      "b": "ramp",
+      "type": "corridor",
+      "d": 3.4362770551863253
+    },
+    {
+      "a": "ramp",
+      "b": "rampTop",
+      "type": "corridor",
+      "d": 6.144187497139065
+    },
+    {
+      "a": "rampTop",
+      "b": "lobby",
+      "type": "corridor",
+      "d": 2.777786168876216
+    },
+    {
+      "a": "lobby",
+      "b": "e1",
+      "type": "corridor",
+      "d": 6.201666872704467
+    },
+    {
+      "a": "entrance",
+      "b": "steps",
+      "type": "stairs",
+      "d": 5.098178498248174
+    },
+    {
+      "a": "steps",
+      "b": "lobby",
+      "type": "corridor",
+      "d": 6.77803511351188
+    },
+    {
+      "a": "university",
+      "b": "heart",
+      "type": "corridor",
+      "d": 14.666415513001123
+    },
+    {
+      "a": "heart",
+      "b": "heartWest",
+      "type": "corridor",
+      "d": 4.128279060334948
+    },
+    {
+      "a": "heartWest",
+      "b": "main",
+      "type": "corridor",
+      "d": 9.575609014574479
+    },
+    {
+      "a": "main",
+      "b": "e1",
+      "type": "corridor",
+      "d": 11.324847018834296
+    },
+    {
+      "a": "lobby",
+      "b": "auditorium",
+      "type": "corridor",
+      "d": 9.277917007604668
+    },
+    {
+      "a": "e0",
+      "b": "s0",
+      "type": "corridor",
+      "d": 3.359724393458487
+    },
+    {
+      "a": "e1",
+      "b": "s1",
+      "type": "corridor",
+      "d": 3.5484306390290343
+    },
+    {
+      "a": "e2",
+      "b": "s2",
+      "type": "corridor",
+      "d": 2.953328969146512
+    },
+    {
+      "a": "e3",
+      "b": "s3",
+      "type": "corridor",
+      "d": 2.7202301373229436
+    },
+    {
+      "a": "e4",
+      "b": "s4",
+      "type": "corridor",
+      "d": 2.695615699612984
+    },
+    {
+      "a": "e5",
+      "b": "s5",
+      "type": "corridor",
+      "d": 2.9743900215002066
+    },
+    {
+      "a": "e6",
+      "b": "s6",
+      "type": "corridor",
+      "d": 2.6763146302331493
+    },
+    {
+      "a": "e7",
+      "b": "s7",
+      "type": "corridor",
+      "d": 3.242592172938188
+    },
+    {
+      "a": "s0",
+      "b": "s1",
+      "type": "stairs",
+      "d": 4.552357630942455
+    },
+    {
+      "a": "s1",
+      "b": "s2",
+      "type": "stairs",
+      "d": 4.549377539839928
+    },
+    {
+      "a": "s2",
+      "b": "s3",
+      "type": "stairs",
+      "d": 4.59883680945519
+    },
+    {
+      "a": "s3",
+      "b": "s4",
+      "type": "stairs",
+      "d": 4.510567591778223
+    },
+    {
+      "a": "s4",
+      "b": "s5",
+      "type": "stairs",
+      "d": 4.561878998833704
+    },
+    {
+      "a": "s5",
+      "b": "s6",
+      "type": "stairs",
+      "d": 4.539792946820373
+    },
+    {
+      "a": "s6",
+      "b": "s7",
+      "type": "stairs",
+      "d": 4.537928161617369
+    },
+    {
+      "a": "e0",
+      "b": "e1",
+      "type": "elevatorA",
+      "d": 4.516689495637264
+    },
+    {
+      "a": "e0",
+      "b": "e1",
+      "type": "elevatorB",
+      "d": 4.516689495637264
+    },
+    {
+      "a": "e0",
+      "b": "e2",
+      "type": "elevatorA",
+      "d": 9.007722908704508
+    },
+    {
+      "a": "e0",
+      "b": "e2",
+      "type": "elevatorB",
+      "d": 9.007722908704508
+    },
+    {
+      "a": "e0",
+      "b": "e3",
+      "type": "elevatorA",
+      "d": 13.505149832563871
+    },
+    {
+      "a": "e0",
+      "b": "e3",
+      "type": "elevatorB",
+      "d": 13.505149832563871
+    },
+    {
+      "a": "e0",
+      "b": "e4",
+      "type": "elevatorA",
+      "d": 18.00386269665485
+    },
+    {
+      "a": "e0",
+      "b": "e4",
+      "type": "elevatorB",
+      "d": 18.00386269665485
+    },
+    {
+      "a": "e0",
+      "b": "e5",
+      "type": "elevatorA",
+      "d": 22.503090276670893
+    },
+    {
+      "a": "e0",
+      "b": "e5",
+      "type": "elevatorB",
+      "d": 22.503090276670893
+    },
+    {
+      "a": "e0",
+      "b": "e6",
+      "type": "elevatorA",
+      "d": 27.002575284590915
+    },
+    {
+      "a": "e0",
+      "b": "e6",
+      "type": "elevatorB",
+      "d": 27.002575284590915
+    },
+    {
+      "a": "e0",
+      "b": "e7",
+      "type": "elevatorA",
+      "d": 31.50220741471937
+    },
+    {
+      "a": "e0",
+      "b": "e7",
+      "type": "elevatorB",
+      "d": 31.50220741471937
+    },
+    {
+      "a": "e1",
+      "b": "e2",
+      "type": "elevatorA",
+      "d": 4.502756933257668
+    },
+    {
+      "a": "e1",
+      "b": "e2",
+      "type": "elevatorB",
+      "d": 4.502756933257668
+    },
+    {
+      "a": "e1",
+      "b": "e3",
+      "type": "elevatorA",
+      "d": 9.001378783275372
+    },
+    {
+      "a": "e1",
+      "b": "e3",
+      "type": "elevatorB",
+      "d": 9.001378783275372
+    },
+    {
+      "a": "e1",
+      "b": "e4",
+      "type": "elevatorA",
+      "d": 13.500919227963701
+    },
+    {
+      "a": "e1",
+      "b": "e4",
+      "type": "elevatorB",
+      "d": 13.500919227963701
+    },
+    {
+      "a": "e1",
+      "b": "e5",
+      "type": "elevatorA",
+      "d": 18.000689431241238
+    },
+    {
+      "a": "e1",
+      "b": "e5",
+      "type": "elevatorB",
+      "d": 18.000689431241238
+    },
+    {
+      "a": "e1",
+      "b": "e6",
+      "type": "elevatorA",
+      "d": 22.50055154879542
+    },
+    {
+      "a": "e1",
+      "b": "e6",
+      "type": "elevatorB",
+      "d": 22.50055154879542
+    },
+    {
+      "a": "e1",
+      "b": "e7",
+      "type": "elevatorA",
+      "d": 27.000459625717482
+    },
+    {
+      "a": "e1",
+      "b": "e7",
+      "type": "elevatorB",
+      "d": 27.000459625717482
+    },
+    {
+      "a": "e2",
+      "b": "e3",
+      "type": "elevatorA",
+      "d": 4.5
+    },
+    {
+      "a": "e2",
+      "b": "e3",
+      "type": "elevatorB",
+      "d": 4.5
+    },
+    {
+      "a": "e2",
+      "b": "e4",
+      "type": "elevatorA",
+      "d": 9
+    },
+    {
+      "a": "e2",
+      "b": "e4",
+      "type": "elevatorB",
+      "d": 9
+    },
+    {
+      "a": "e2",
+      "b": "e5",
+      "type": "elevatorA",
+      "d": 13.5
+    },
+    {
+      "a": "e2",
+      "b": "e5",
+      "type": "elevatorB",
+      "d": 13.5
+    },
+    {
+      "a": "e2",
+      "b": "e6",
+      "type": "elevatorA",
+      "d": 18
+    },
+    {
+      "a": "e2",
+      "b": "e6",
+      "type": "elevatorB",
+      "d": 18
+    },
+    {
+      "a": "e2",
+      "b": "e7",
+      "type": "elevatorA",
+      "d": 22.5
+    },
+    {
+      "a": "e2",
+      "b": "e7",
+      "type": "elevatorB",
+      "d": 22.5
+    },
+    {
+      "a": "e3",
+      "b": "e4",
+      "type": "elevatorA",
+      "d": 4.5
+    },
+    {
+      "a": "e3",
+      "b": "e4",
+      "type": "elevatorB",
+      "d": 4.5
+    },
+    {
+      "a": "e3",
+      "b": "e5",
+      "type": "elevatorA",
+      "d": 9
+    },
+    {
+      "a": "e3",
+      "b": "e5",
+      "type": "elevatorB",
+      "d": 9
+    },
+    {
+      "a": "e3",
+      "b": "e6",
+      "type": "elevatorA",
+      "d": 13.5
+    },
+    {
+      "a": "e3",
+      "b": "e6",
+      "type": "elevatorB",
+      "d": 13.5
+    },
+    {
+      "a": "e3",
+      "b": "e7",
+      "type": "elevatorA",
+      "d": 18
+    },
+    {
+      "a": "e3",
+      "b": "e7",
+      "type": "elevatorB",
+      "d": 18
+    },
+    {
+      "a": "e4",
+      "b": "e5",
+      "type": "elevatorA",
+      "d": 4.5
+    },
+    {
+      "a": "e4",
+      "b": "e5",
+      "type": "elevatorB",
+      "d": 4.5
+    },
+    {
+      "a": "e4",
+      "b": "e6",
+      "type": "elevatorA",
+      "d": 9
+    },
+    {
+      "a": "e4",
+      "b": "e6",
+      "type": "elevatorB",
+      "d": 9
+    },
+    {
+      "a": "e4",
+      "b": "e7",
+      "type": "elevatorA",
+      "d": 13.5
+    },
+    {
+      "a": "e4",
+      "b": "e7",
+      "type": "elevatorB",
+      "d": 13.5
+    },
+    {
+      "a": "e5",
+      "b": "e6",
+      "type": "elevatorA",
+      "d": 4.5
+    },
+    {
+      "a": "e5",
+      "b": "e6",
+      "type": "elevatorB",
+      "d": 4.5
+    },
+    {
+      "a": "e5",
+      "b": "e7",
+      "type": "elevatorA",
+      "d": 9
+    },
+    {
+      "a": "e5",
+      "b": "e7",
+      "type": "elevatorB",
+      "d": 9
+    },
+    {
+      "a": "e6",
+      "b": "e7",
+      "type": "elevatorA",
+      "d": 4.5
+    },
+    {
+      "a": "e6",
+      "b": "e7",
+      "type": "elevatorB",
+      "d": 4.5
+    },
+    {
+      "a": "e2",
+      "b": "info",
+      "type": "corridor",
+      "d": 2.734196042715299
+    },
+    {
+      "a": "info",
+      "b": "library",
+      "type": "corridor",
+      "d": 5.052467120130522
+    },
+    {
+      "a": "info",
+      "b": "south2",
+      "type": "corridor",
+      "d": 9.18860794680021
+    },
+    {
+      "a": "south2",
+      "b": "southHall2",
+      "type": "corridor",
+      "d": 10.033168392885669
+    },
+    {
+      "a": "southHall2",
+      "b": "door2532",
+      "type": "corridor",
+      "d": 3.6243796710609657
+    },
+    {
+      "a": "door2532",
+      "b": "room",
+      "type": "corridor",
+      "d": 1.748000000000001
+    },
+    {
+      "a": "southHall2",
+      "b": "door2522",
+      "type": "corridor",
+      "d": 6.740687502028262
+    },
+    {
+      "a": "door2522",
+      "b": "consult",
+      "type": "corridor",
+      "d": 1.748000000000001
+    },
+    {
+      "a": "e0",
+      "b": "bHall",
+      "type": "corridor",
+      "d": 8.66816566523737
+    },
+    {
+      "a": "bHall",
+      "b": "bOpen",
+      "type": "corridor",
+      "d": 11.21025762415833
+    },
+    {
+      "a": "bOpen",
+      "b": "b2550",
+      "type": "corridor",
+      "d": 4.460753299612072
+    },
+    {
+      "a": "e3",
+      "b": "hall3",
+      "type": "corridor",
+      "d": 8.924
+    },
+    {
+      "a": "hall3",
+      "b": "east3",
+      "type": "corridor",
+      "d": 25.98132775667941
+    },
+    {
+      "a": "east3",
+      "b": "3610",
+      "type": "corridor",
+      "d": 1.8775665101401866
+    },
+    {
+      "a": "e4",
+      "b": "hall4",
+      "type": "corridor",
+      "d": 8.924
+    },
+    {
+      "a": "hall4",
+      "b": "4616",
+      "type": "corridor",
+      "d": 7.49926983112356
+    },
+    {
+      "a": "e5",
+      "b": "hall5",
+      "type": "corridor",
+      "d": 8.924
+    },
+    {
+      "a": "hall5",
+      "b": "5618",
+      "type": "corridor",
+      "d": 7.492918523512718
+    },
+    {
+      "a": "e6",
+      "b": "hall6",
+      "type": "corridor",
+      "d": 8.924
+    },
+    {
+      "a": "hall6",
+      "b": "6618",
+      "type": "corridor",
+      "d": 7.352233402171071
+    },
+    {
+      "a": "e7",
+      "b": "hall7",
+      "type": "corridor",
+      "d": 9.19459341134778
+    },
+    {
+      "a": "hall7",
+      "b": "north7",
+      "type": "corridor",
+      "d": 14.820640337043471
+    },
+    {
+      "a": "north7",
+      "b": "7560",
+      "type": "corridor",
+      "d": 7.144823300824171
+    }
+  ],
+  "destinations": [
+    "library",
+    "room",
+    "consult",
+    "auditorium",
+    "b2550",
+    "3610",
+    "4616",
+    "5618",
+    "6618",
+    "7560"
+  ]
+}
