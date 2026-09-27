@@ -54,11 +54,11 @@ Floor traces and outdoor routes are approximate demo data; some elevator links a
 
 ## Android
 
-[Download GoGo Traveler 0.7 APK](releases/GoGo-Traveler-0.7.apk) for Android 8 or later. Package: `dev.gogo.traveler`, version code 8. This development build includes every available floor for all five demo buildings, one-tap Talk, foreground “Hey GoGo” detection with an acknowledgment tone and optional local Ollama interpretation.
+[Download GoGo Traveler 0.9 APK](releases/GoGo-Traveler-0.9.apk) for Android 8 or later. Package: `dev.gogo.traveler`, version code 13. This development build includes every available floor for all five demo buildings, a voice-only animated microphone, foreground “Hey GoGo,” spoken follow-up questions, voice-controlled next steps and local Ollama interpretation over the current Wi-Fi network.
 
 ```sh
 node scripts/sync-android-web.mjs
-python scripts/build-apk.py --tools ../work/android-tools --output releases/GoGo-Traveler-0.7.apk
+python scripts/build-apk.py --tools ../work/android-tools --output releases/GoGo-Traveler-0.9.apk
 ```
 
 The manual builder expects JDK 17, Android platform 35 and build tools 35.0.0 under the supplied tools path. The standard Gradle Android project is in `traveler-app`. APK signing, alignment, integrity and asset parity passed. Phone installation, microphone recognition and native Back gestures still need physical-device verification.

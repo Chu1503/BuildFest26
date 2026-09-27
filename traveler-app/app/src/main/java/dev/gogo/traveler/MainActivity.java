@@ -14,6 +14,7 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.view.View;
 import android.view.WindowInsets;
 import android.webkit.JavascriptInterface;
@@ -54,6 +55,7 @@ public class MainActivity extends Activity implements RecognitionListener {
     private boolean wakeEnabled;
     private boolean wakeTransition;
     private boolean requestedWake;
+    private boolean listenAfterSpeech;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -103,6 +105,11 @@ public class MainActivity extends Activity implements RecognitionListener {
                 int result = tts.setLanguage(Locale.US);
                 speakingReady = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED;
                 tts.setSpeechRate(.95f);
+                tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                    @Override public void onStart(String utteranceId) {}
+                    @Override public void onDone(String utteranceId) { continueAfterPrompt(); }
+                    @Override public void onError(String utteranceId) { continueAfterPrompt(); }
+                });
             }
         });
         web.loadUrl("https://appassets.androidplatform.net/web/index.html");
@@ -154,7 +161,7 @@ public class MainActivity extends Activity implements RecognitionListener {
 
     private boolean containsWake(String text) {
         String value = text == null ? "" : text.toLowerCase(Locale.US).replaceAll("[^a-z ]", " ").replaceAll("\\s+", " ").trim();
-        return value.contains("hey gogo") || value.contains("hey go go");
+        return value.matches("^(hey|hi|okay) (gogo|go go|google|go)( .*)?$");
     }
 
     private void wakeDetected() {
@@ -173,6 +180,17 @@ public class MainActivity extends Activity implements RecognitionListener {
             tone.startTone(ToneGenerator.TONE_PROP_ACK, 180);
             main.postDelayed(tone::release, 350);
         } catch (RuntimeException ignored) {}
+    }
+
+    private void stopVoiceSession() {
+        wakeEnabled = false;
+        listenAfterSpeech = false;
+        wakeTransition = true;
+        listening = false;
+        listeningForWake = false;
+        if (recognizer != null) recognizer.cancel();
+        if (tts != null) tts.stop();
+        main.postDelayed(() -> wakeTransition = false, 500);
     }
 
     private void deliver(ArrayList<String> results, boolean partial) {
@@ -199,8 +217,20 @@ public class MainActivity extends Activity implements RecognitionListener {
         if (speakingReady) {
             String safe = text.substring(0, Math.min(text.length(), 1000));
             tts.speak(safe, TextToSpeech.QUEUE_FLUSH, null, "gogo");
-            scheduleWake(Math.max(1600, Math.min(9000, safe.length() * 55L)));
-        } else Toast.makeText(this, "Enable an English voice in Android settings.", Toast.LENGTH_LONG).show();
+            if (!listenAfterSpeech) scheduleWake(Math.max(1600, Math.min(9000, safe.length() * 55L)));
+        } else { Toast.makeText(this, "Enable an English voice in Android settings.", Toast.LENGTH_LONG).show(); continueAfterPrompt(); }
+    }
+
+    private void promptAndListen(String text) {
+        listenAfterSpeech = true;
+        wakeEnabled = true;
+        speakText(text);
+    }
+
+    private void continueAfterPrompt() {
+        if (!listenAfterSpeech) return;
+        listenAfterSpeech = false;
+        main.post(() -> { if (resumed) requestListening(false); });
     }
 
     private void jsStatus(String text, boolean active) {
@@ -227,7 +257,7 @@ public class MainActivity extends Activity implements RecognitionListener {
                 connection.setDoOutput(true);
                 connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
 
-                String systemText = "You are GoGo, a concise indoor accessibility navigation assistant. Use only the supplied building context. Never invent a room, floor, elevator, obstacle, or route. Navigation actions are validated by the app. Reply with JSON only using: {\"speech\":\"short response\",\"action\":\"none|next|repeat|navigate\",\"destination\":\"exact mapped name or empty\",\"missingData\":\"specific absent map detail or empty\"}. If the context cannot answer, set action to none and describe the missing fact in missingData. Building context: " + limit(context, 30000);
+                String systemText = "You are GoGo, a concise voice-only indoor accessibility navigation agent. Use only the supplied building context. Never invent a room, floor, elevator, obstacle, or route. Use currentLocation when present and infer mapped room floors from the destination catalog. If a destination or required fact is missing or ambiguous, ask exactly one short question. Navigation actions are validated by the app. Reply with JSON only using: {\"speech\":\"short spoken response\",\"action\":\"none|next|repeat|navigate|ask\",\"destination\":\"exact mapped name or empty\",\"question\":\"one short follow-up question or empty\",\"missingData\":\"specific absent map detail or empty\"}. Building context: " + limit(context, 30000);
                 JSONArray messages = new JSONArray()
                     .put(new JSONObject().put("role", "system").put("content", systemText))
                     .put(new JSONObject().put("role", "user").put("content", limit(question, 2000)));
@@ -265,7 +295,9 @@ public class MainActivity extends Activity implements RecognitionListener {
         @JavascriptInterface public void closeApp() { runOnUiThread(() -> finish()); }
         @JavascriptInterface public void speak(String text) { runOnUiThread(() -> speakText(text)); }
         @JavascriptInterface public void stopSpeech() { runOnUiThread(() -> { if (tts != null) tts.stop(); }); }
-        @JavascriptInterface public void startVoice() { runOnUiThread(() -> requestListening(false)); }
+        @JavascriptInterface public void startVoice() { runOnUiThread(() -> { wakeEnabled = true; requestListening(false); }); }
+        @JavascriptInterface public void promptAndListen(String text) { runOnUiThread(() -> MainActivity.this.promptAndListen(text)); }
+        @JavascriptInterface public void stopVoice() { runOnUiThread(() -> stopVoiceSession()); }
         @JavascriptInterface public void setWakeWord(boolean enabled) { runOnUiThread(() -> { wakeEnabled = enabled; if (enabled) requestListening(true); else { listening = false; if (recognizer != null) recognizer.cancel(); jsStatus("Wake phrase off.", false); } }); }
         @JavascriptInterface public void askOllama(String requestId, String baseUrl, String model, String question, String context) { MainActivity.this.askOllama(requestId, baseUrl, model, question, context); }
     }
