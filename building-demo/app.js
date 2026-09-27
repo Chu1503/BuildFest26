@@ -1,40 +1,176 @@
 import {planRoute,cueFor,nodes,catalog} from './routing.js';
 import {floors,selectBuilding,activeId,model} from './active-building.js';
 import {places,outdoorRoute} from './campus.js';
-import {BuildingViewer} from './viewer-2d.js';
-import {amenities,refreshAmenities,accessibility} from './amenities.js';
+import {BuildingViewer} from './viewer.js';
+import {amenities,refreshAmenities} from './amenities.js';
+
 const $=id=>document.getElementById(id);
-document.documentElement.classList.add('map2d');
-let viewer,path=[],index=0,screen='home',outdoorStage=false,campusMap,routeLayer;
-function showOutdoor(){const r=outdoorRoute(activeId,$('profile').value,'comfort');if(!campusMap){campusMap=L.map('outdoorMap');L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).on('tileerror',()=>{$('tileStatus').hidden=false;}).addTo(campusMap);for(const p of places)L.circleMarker([p.lat,p.lng],{radius:8,color:'#173f4c',fillColor:'#72b9ac',fillOpacity:1}).addTo(campusMap).bindTooltip(p.name);L.circleMarker([43.0753,-89.3987],{radius:7,color:'#2779c4'}).addTo(campusMap).bindTooltip('Library Mall · starting point');}if(routeLayer)routeLayer.remove();routeLayer=L.polyline(r.points,{color:'#287d69',weight:6}).addTo(campusMap);requestAnimationFrame(()=>{campusMap.invalidateSize();campusMap.fitBounds(routeLayer.getBounds(),{padding:[35,35],maxZoom:17});});$('cueMeta').textContent='CAMPUS · DEMO ROUTE';$('instruction').textContent='Head to '+places.find(p=>p.id===activeId).name;$('detail').textContent=`Library Mall · approximately ${r.meters} m. Seeded accessibility-first route; follow local signs and conditions.`;$('next').textContent='Enter building';$('next').disabled=false;}
-function stage(){ $('campusJourney').hidden=!outdoorStage;$('scene').hidden=outdoorStage;$('floorSelect').hidden=outdoorStage;document.querySelector('.map-legend').hidden=outdoorStage;if(outdoorStage)showOutdoor();else{if(!viewer)viewer=new BuildingViewer($('scene'),()=>{},()=>{});viewer.setMode('pov');renderCue();requestAnimationFrame(()=>viewer.resize());$('next').textContent='Next step';}}
-const floorName=f=>floors.find(x=>x.id===f)?.name||`Floor ${f}`;
-const options=(el,items,value)=>{el.replaceChildren(...items.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;return o;}));if(items.some(x=>String(x.id)===String(value)))el.value=value;};
-function destinations(){return [...catalog.filter(c=>c.routable),...amenities.filter(c=>c.routable)];}
-function populate(id,f,preferred){let list=(id==='source'?catalog.filter(c=>c.routable):destinations()).filter(c=>c.floor===Number(f));if(id==='destination'&&$('destinationType').value!=='rooms')list=list.filter(c=>c.kind===$('destinationType').value);else if(id==='destination')list=list.filter(c=>!c.kind);options($(id),list,preferred);}
+let viewer,path=[],index=0,mode='overview',playing=false,progress=0,outdoor=false,campusMap,routeLayer,last=0;
+const floorName=f=>floors.find(x=>x.id===f)?.name||(f===0?'Garden':`Floor ${f}`);
+const options=(el,items,value)=>{
+  el.replaceChildren(...items.map(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;return option;}));
+  if(items.some(item=>String(item.id)===String(value)))el.value=value;
+};
+const destinations=()=>[...catalog.filter(item=>item.routable),...amenities.filter(item=>item.routable)];
+
+function populate(id,floor,preferred){
+  let list=(id==='source'?catalog.filter(item=>item.routable):destinations()).filter(item=>item.floor===Number(floor));
+  if(id==='destination')list=$('destinationType').value==='rooms'?list.filter(item=>!item.kind):list.filter(item=>item.kind===$('destinationType').value);
+  options($(id),list,preferred);
+}
+
 function stopSpeech(){if(window.GoGoNative)window.GoGoNative.stopSpeech();else window.speechSynthesis?.cancel();}
-function speak(){if(!$('voice').checked||$('profile').value==='deaf'||!path.length)return;const c=cueFor(path,index,$('profile').value);if(window.GoGoNative)window.GoGoNative.speak(c.text);else if(window.speechSynthesis){stopSpeech();speechSynthesis.speak(new SpeechSynthesisUtterance(c.text));}}
-function showHome(){screen='home';stopSpeech();$('planner').hidden=false;$('journey').hidden=true;document.body.classList.remove('navigation');window.scrollTo(0,0);}
-window.GoGoBack=()=>{if(screen==='journey'){showHome();return true;}return false;};
-$('back').onclick=()=>{if(!window.GoGoBack()&&window.GoGoNative)window.GoGoNative.closeApp();};
-function plan(){stopSpeech();index=0;path=$('destinationType').value==='emergency'?[]:planRoute($('journeyType').value==='outdoor'?'entrance':$('source').value,amenities.find(a=>a.id===$('destination').value)?.routeId||$('destination').value,$('profile').value,'normal',{avoidStairs:$('stepfree').checked,mode:'comfort'}).path;const d=destinations().find(c=>c.id===$('destination').value);$('destinationDetails').textContent=d?.detail||'';const emergency=$('destinationType').value==='emergency';$('emergencyInfo').hidden=!emergency;$('start').hidden=emergency;$('start').disabled=!path.length;$('formStatus').textContent=emergency?'':path.length?'':$('destinationType').value==='bathroom'?'No bathroom location is mapped on this floor. Choose another floor.':'Choose a mapped destination and a compatible starting place.';}
-function changeBuilding(){selectBuilding($('buildingChoice').value);refreshAmenities();viewer?.loadBuilding();for(const id of ['sourceFloor','destFloor','floorSelect'])options($(id),floors.map(f=>({id:f.id,name:f.name})));const d=catalog.find(c=>c.id===(model()?.defaultRoom||'space-2-Library')&&c.routable)||catalog.find(c=>c.routable);$('sourceFloor').value=nodes.entrance.floor;$('destFloor').value=d.floor;$('destinationType').value='rooms';$('destinationField').hidden=false;populate('source',nodes.entrance.floor,'entrance');populate('destination',d.floor,d.id);const a=accessibility(activeId);$('accessibilityScore').textContent=a.score;$('accessibilityDetails').textContent=a.detail;$('emergencyText').textContent=activeId==='morgridge'?'In the Library/Commons, posted exits lead to two nearby stairwells: one in front of the information desk and one beside it under the green Exit sign. If you cannot use stairs, follow the building’s emergency procedures and use the emergency phone by the elevators for assistance. Do not use elevators during a fire.':'Follow posted EXIT signs and the building’s evacuation instructions. Emergency exit locations are not verified in these supplied plans. Do not use elevators during a fire.';plan();}
-function renderCue(){const n=nodes[path[index]],c=cueFor(path,index,$('profile').value);$('cueMeta').textContent=`${floorName(n.floor)} · ${index+1} / ${path.length}`;$('instruction').textContent=c.text;const amenity=amenities.find(a=>a.id===$('destination').value);$('detail').textContent=amenity ? amenity.detail : c.detail||'';if(amenity&&index===path.length-1)$('instruction').textContent='Reached the mapped approach · '+amenity.name;$('next').disabled=index===path.length-1;viewer.setPosition(n.p);viewer.setRoute(path);if(path[index+1])viewer.setHeading(n.p,nodes[path[index+1]].p);$('floorSelect').value=n.floor;}
-$('start').onclick=()=>{plan();if(!path.length)return;screen='journey';$('planner').hidden=true;$('journey').hidden=false;document.body.classList.add('navigation');outdoorStage=$('journeyType').value==='outdoor';stage();window.scrollTo(0,0);if(!outdoorStage)speak();};
-$('follow').onclick=()=>{if(outdoorStage)showOutdoor();else{viewer.setMode('pov');renderCue();}};
-$('floorSelect').onchange=()=>{viewer.view=$('floorSelect').value;viewer.follow=false;viewer.pan=[0,0];viewer.zoom=1;};
-$('next').onclick=()=>{if(outdoorStage){outdoorStage=false;stage();speak();return;}if(index+1<path.length){index++;renderCue();speak();}};
-$('repeat').onclick=()=>{if(!outdoorStage)speak();};
-$('journeyType').onchange=()=>{$('indoorSource').hidden=$('journeyType').value==='outdoor';plan();};
+function currentCue(){return path.length?cueFor(path,index,$('profile').value):{text:'Choose a route.',detail:''};}
+function speak(){
+  if(!$('voice').checked||$('profile').value==='deaf'||!path.length)return;
+  const cue=currentCue();
+  if(window.GoGoNative)window.GoGoNative.speak(cue.text);
+  else if(window.speechSynthesis){stopSpeech();speechSynthesis.speak(new SpeechSynthesisUtterance(cue.text));}
+}
+
+function setMode(next){
+  mode=next;
+  viewer?.setMode(next);
+  for(const [id,value] of [['overview','overview'],['pov','pov'],['keyboard','manual']])$(id).classList.toggle('selected',next===value);
+  $('walkHint').hidden=next!=='manual';
+  if(next==='manual')viewer?.renderer.domElement.focus();
+  setHeading();
+}
+
+function setHeading(){
+  if(path[index+1])viewer?.setHeading(nodes[path[index]].p,nodes[path[index+1]].p);
+}
+
+function renderCue(){
+  if(!path.length){$('cueMeta').textContent='READY';$('instruction').textContent='Choose a destination.';$('detail').textContent='';$('next').disabled=true;return;}
+  const node=nodes[path[index]],cue=currentCue();
+  $('cueMeta').textContent=`${floorName(node.floor)} · ${index+1} / ${path.length}`;
+  $('instruction').textContent=cue.text;
+  $('detail').textContent=$('profile').value==='blind'?(cue.detail||''):'';
+  $('next').disabled=index===path.length-1;
+  $('play').textContent=playing?'Pause preview':'Preview route';
+  viewer?.setPosition(node.p);
+  viewer&&(viewer.view=String(node.floor));
+  $('floorSelect').value=String(node.floor);
+  viewer?.updateVisibility();
+  setHeading();
+}
+
+function plan(){
+  stopSpeech();playing=false;progress=0;index=0;
+  const emergency=$('destinationType').value==='emergency';
+  const destination=amenities.find(item=>item.id===$('destination').value)?.routeId||$('destination').value;
+  path=emergency||!$('source').value||!destination?[]:planRoute($('journeyType').value==='outdoor'?'entrance':$('source').value,destination,$('profile').value,'normal',{avoidStairs:$('stepfree').checked,mode:'comfort'}).path;
+  viewer?.setRoute(path);
+  const start=nodes[$('journeyType').value==='outdoor'?'entrance':$('source').value];
+  if(start){viewer?.setPosition(start.p);viewer&&(viewer.view=String(start.floor));$('floorSelect').value=String(start.floor);viewer?.updateVisibility();}
+  $('emergencyInfo').hidden=!emergency;
+  $('start').hidden=emergency;
+  $('start').disabled=!path.length;
+  $('formStatus').textContent=emergency?'':path.length?'':$('destinationType').value==='bathroom'?'No bathroom mapped on this floor.':'Choose another destination.';
+  renderCue();
+}
+
+function refreshFloorControls(){
+  const floorItems=floors.map(f=>({id:f.id,name:f.name}));
+  options($('sourceFloor'),floorItems);
+  options($('destFloor'),floorItems);
+  options($('liftFloor'),floorItems);
+  options($('floorSelect'),[{id:'all',name:'All floors'},...floorItems],'all');
+}
+
+function changeBuilding(){
+  selectBuilding($('buildingChoice').value);
+  refreshAmenities();
+  viewer?.loadBuilding();
+  refreshFloorControls();
+  const preferred=catalog.find(item=>item.id===(model()?.defaultRoom||'space-2-Library')&&item.routable)||catalog.find(item=>item.routable);
+  $('buildingName').textContent=places.find(item=>item.id===activeId)?.name||'Building demo';
+  $('sourceFloor').value=String(nodes.entrance.floor);
+  $('destFloor').value=String(preferred.floor);
+  $('destinationType').value='rooms';
+  $('destinationField').hidden=false;
+  populate('source',nodes.entrance.floor,'entrance');
+  populate('destination',preferred.floor,preferred.id);
+  $('emergencyText').textContent=activeId==='morgridge'?'Use posted exits. If you cannot use stairs, use the emergency phone by the elevators. Do not use elevators during a fire.':'Follow posted exit signs and building instructions. Do not use elevators during a fire.';
+  setMode('overview');
+  plan();
+  if(viewer){viewer.view='all';viewer.zoom=.75;viewer.updateVisibility();}
+  $('floorSelect').value='all';
+}
+
+function showOutdoor(){
+  const route=outdoorRoute(activeId,$('profile').value,'comfort');
+  if(!campusMap){
+    campusMap=L.map('outdoorMap');
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).on('tileerror',()=>{$('tileStatus').hidden=false;}).addTo(campusMap);
+    for(const place of places)L.circleMarker([place.lat,place.lng],{radius:8,color:'#173f4c',fillColor:'#72b9ac',fillOpacity:1}).addTo(campusMap).bindTooltip(place.name);
+  }
+  if(routeLayer)routeLayer.remove();
+  if(route){routeLayer=L.polyline(route.points,{color:'#287d69',weight:6}).addTo(campusMap);requestAnimationFrame(()=>{campusMap.invalidateSize();campusMap.fitBounds(routeLayer.getBounds(),{padding:[35,35],maxZoom:17});});}
+  $('cueMeta').textContent='CAMPUS';
+  $('instruction').textContent=`Head to ${places.find(place=>place.id===activeId)?.name||'the building'}`;
+  $('detail').textContent='';
+  $('next').textContent='Enter building';
+  $('next').disabled=!route;
+}
+
+function setStage(isOutdoor){
+  outdoor=isOutdoor;
+  $('campusJourney').hidden=!outdoor;
+  $('scene').hidden=outdoor;
+  document.querySelector('.views').hidden=outdoor;
+  $('floorSelect').hidden=outdoor;
+  if(outdoor)showOutdoor();
+  else{$('next').textContent='Next step';renderCue();requestAnimationFrame(()=>viewer?.resize());}
+}
+
+function advance(){
+  if(outdoor){setStage(false);setMode('pov');speak();return;}
+  if(index+1>=path.length)return;
+  index++;progress=0;playing=false;renderCue();speak();
+}
+
+options($('buildingChoice'),places.map(place=>({id:place.id,name:place.name})),'morgridge');
+selectBuilding($('buildingChoice').value);
+refreshAmenities();
+try{
+  viewer=new BuildingViewer($('scene'),()=>{},near=>{if(!near)return;$('liftFloor').value=String(viewer.floor);$('liftDialog').showModal();});
+}catch(error){$('renderError').hidden=false;console.error(error);}
+changeBuilding();
+
+for(const [id,value] of [['overview','overview'],['pov','pov'],['keyboard','manual']])$(id).onclick=()=>{setStage(false);setMode(value);$('back').hidden=value==='overview';};
+$('back').onclick=()=>{playing=false;setStage(false);setMode('overview');if(viewer){viewer.view='all';viewer.zoom=.75;viewer.updateVisibility();}$('floorSelect').value='all';$('back').hidden=true;};
+$('start').onclick=()=>{plan();if(!path.length)return;$('back').hidden=false;setStage($('journeyType').value==='outdoor');if(!outdoor){setMode('pov');renderCue();speak();}};
+$('next').onclick=advance;
+$('repeat').onclick=()=>{if(!outdoor)speak();};
+$('play').onclick=()=>{if(!path.length||outdoor)return;if(index===path.length-1)index=0;playing=!playing;progress=0;if(playing)setMode('pov');renderCue();};
+$('floorSelect').onchange=()=>{setMode('overview');viewer&&(viewer.view=$('floorSelect').value);viewer?.updateVisibility();};
 $('buildingChoice').onchange=changeBuilding;
+$('journeyType').onchange=()=>{$('indoorSource').hidden=$('journeyType').value==='outdoor';plan();};
 $('sourceFloor').onchange=()=>{populate('source',$('sourceFloor').value,'e'+$('sourceFloor').value);plan();};
 $('destFloor').onchange=()=>{populate('destination',$('destFloor').value);plan();};
-$('destinationType').onchange=()=>{const emergency=$('destinationType').value==='emergency';$('destinationField').hidden=emergency;const kind=$('destinationType').value;if(['bathroom','exit'].includes(kind)&&!amenities.some(a=>a.kind===kind&&a.floor===Number($('destFloor').value))){const first=amenities.find(a=>a.kind===kind);if(first)$('destFloor').value=first.floor;}populate('destination',$('destFloor').value);plan();};
+$('destinationType').onchange=()=>{
+  const type=$('destinationType').value,emergency=type==='emergency';
+  $('destinationField').hidden=emergency;
+  if(['bathroom','exit'].includes(type)&&!amenities.some(item=>item.kind===type&&item.floor===Number($('destFloor').value))){const first=amenities.find(item=>item.kind===type);if(first)$('destFloor').value=String(first.floor);}
+  populate('destination',$('destFloor').value);plan();
+};
 for(const id of ['source','destination','stepfree'])$(id).onchange=plan;
-$('profile').onchange=()=>{$('stepfree').checked=['wheelchair','blind','mobility'].includes($('profile').value);$('voice').checked=$('profile').value!=='deaf';try{localStorage.setItem('gogo-profile',$('profile').value);}catch{}plan();};
+$('profile').onchange=()=>{$('stepfree').checked=['wheelchair','blind','mobility'].includes($('profile').value);$('voice').checked=$('profile').value!=='deaf';plan();};
 $('voice').onchange=()=>{if(!$('voice').checked)stopSpeech();};
-options($('buildingChoice'),places.map(p=>({id:p.id,name:p.name})), 'morgridge');
-try{const saved=localStorage.getItem('gogo-profile');if([...$('profile').options].some(o=>o.value===saved))$('profile').value=saved;}catch{}
-changeBuilding();$('profile').onchange();showHome();
-let last=0;function frame(t){if(screen==='journey'&&!outdoorStage)viewer?.tick(Math.min(.1,(t-last)/1000||0));last=t;requestAnimationFrame(frame);}requestAnimationFrame(frame);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSpeech();});
+$('rideLift').onclick=()=>{viewer?.useElevator(Number($('liftFloor').value));$('floorSelect').value=String(viewer.floor);$('liftDialog').close();};
+$('closeLift').onclick=()=>$('liftDialog').close();
+
+function frame(time){
+  const dt=Math.min(.1,(time-last)/1000||0);last=time;
+  if(playing&&path[index+1]){
+    const a=nodes[path[index]],b=nodes[path[index+1]];progress+=dt/3;
+    viewer?.setPosition(a.p.map((value,i)=>value+(b.p[i]-value)*Math.min(1,progress)));
+    if(progress>=1){index++;progress=0;if(index===path.length-1)playing=false;renderCue();}
+  }
+  if(!outdoor)viewer?.tick(dt,$('profile').value);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){playing=false;stopSpeech();}});

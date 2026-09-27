@@ -46,11 +46,11 @@ python -m http.server 8000 --directory building-demo
 
 Open http://localhost:8000. No dependency installation is needed. Leaflet and renderer assets are bundled. Street tiles require internet.
 
-Choose a building, accessibility profile, starting place and destination on the home screen. Start journey opens the 2D map with Follow, floor selection, minimap and step controls. Choose Campus · Library Mall as the start for the outdoor map, then Enter building. Back returns to setup. Position advances manually; location and motion sensors are not collected.
+Choose a building, accessibility profile, starting place and destination in the left panel. The right panel stays open with the interactive 3D building, route preview, POV and keyboard Explore modes. Choose Campus · Library Mall as the start for the outdoor map, then Enter building.
 
 The current demo integrates Morgridge Hall, Memorial Union, College Library, Discovery and Chazen. Bathroom destinations route to nearby mapped approaches, not verified bathroom doors. Emergency exit/assistance displays information, not a validated evacuation route. The capabilities above describe the project vision: live obstacle detection and emergency navigation are not production features of this build. Obstacle simulation remains covered by routing tests.
 
-Morgridge's home card shows an app checklist of four features documented in [UW's accessibility guide](https://kb.wisc.edu/morgridgehall/157777), not an official numeric rating. Other building scores are labeled mock. Floor traces and outdoor routes are approximate demo data; some elevator links are inferred, Chazen's supplied plan is from 2021, and Discovery is conceptual. The prototype is not validated for real-world navigation.
+Floor traces and outdoor routes are approximate demo data; some elevator links are inferred, Chazen's supplied plan is from 2021, and Discovery is conceptual. The prototype is not validated for real-world navigation.
 
 ## Android
 
