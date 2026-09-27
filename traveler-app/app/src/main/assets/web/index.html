@@ -1,1 +1,49 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>GoGo</title><link rel="stylesheet" href="vendor/leaflet/leaflet.css"><link rel="stylesheet" href="style.css"></head><body><header><button id="back" aria-label="Go back">← Back</button><strong class="brand">GoGo</strong></header><main><aside id="planner"><h1>Find your way.</h1><p class="intro">Your place. Your pace.</p><label>Building<select id="buildingChoice"></select></label><section class="access-card" aria-label="Building accessibility"><span>ACCESSIBILITY</span><strong id="accessibilityScore"></strong><p id="accessibilityDetails"></p></section><label>Access preferences<select id="profile"><option value="wheelchair">Wheelchair</option><option value="blind">Blind / low vision</option><option value="deaf">Deaf / hard of hearing</option><option value="mobility">Limited mobility</option><option value="walking">No specific preference</option></select></label><label class="check"><input id="stepfree" type="checkbox" checked> Avoid stairs</label><div class="field-title">Starting from</div><label>Journey<select id="journeyType"><option value="indoor">Inside this building</option><option value="outdoor">Campus · Library Mall</option></select></label><div id="indoorSource"><label>Floor<select id="sourceFloor"></select></label><label>Place<select id="source"></select></label></div><div class="field-title">Going to</div><label>Floor<select id="destFloor"></select></label><label>Destination type<select id="destinationType"><option value="rooms">Rooms & places</option><option value="bathroom">Bathroom</option><option value="exit">Building exit</option><option value="emergency">Emergency exit / assistance</option></select></label><label id="destinationField">Destination<select id="destination"></select></label><p id="destinationDetails" class="subtle"></p><section id="emergencyInfo" class="emergency" hidden><h2>Emergency exits</h2><p id="emergencyText"></p><p>For an immediate emergency, call 911. This map does not provide a verified evacuation route.</p></section><p id="formStatus" class="subtle" role="status"></p><label class="check"><input id="voice" type="checkbox" checked> Spoken directions</label><button id="start" class="primary">Start journey →</button></aside><section id="journey" class="experience" hidden><div class="toolbar"><button id="follow" class="primary">Follow</button><select id="floorSelect" aria-label="View floor"></select></div><div id="campusJourney" hidden><div id="outdoorMap" aria-label="Interactive campus map"></div><p id="tileStatus" class="subtle" hidden>Street map tiles could not load. The seeded route and building markers remain visible.</p></div><div id="scene"></div><div class="map-legend">↕ Elevator <span>WC Bathroom approach</span><span>EXIT Building exit</span></div><div class="guidance" role="status" aria-live="polite"><p id="cueMeta"></p><h2 id="instruction"></h2><p id="detail"></p><div class="actions"><button id="next" class="primary">Next step</button><button id="repeat">Repeat</button></div><p class="subtle">Advance when you reach each landmark. Position is set manually.</p></div></section></main><script src="vendor/leaflet/leaflet.js"></script><script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>GoGo</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><button id="back" aria-label="Go back">← Back</button><strong class="brand">GoGo</strong></header>
+  <main>
+    <aside id="planner">
+      <label>Building<select id="buildingChoice"></select></label>
+      <section class="access-card" aria-label="Building accessibility"><span>ACCESSIBILITY SCORE</span><strong id="accessibilityScore"></strong></section>
+      <label>Access preferences<select id="profile"><option value="wheelchair">Wheelchair</option><option value="blind">Blind / low vision</option><option value="deaf">Deaf / hard of hearing</option><option value="mobility">Limited mobility</option><option value="walking">No specific preference</option></select></label>
+      <label class="check"><input id="stepfree" type="checkbox" checked> Avoid stairs</label>
+      <div class="field-title">Starting from</div>
+      <label>Journey<select id="journeyType"><option value="indoor">Inside this building</option><option value="outdoor">Campus · Library Mall</option></select></label>
+      <div id="indoorSource"><label>Floor<select id="sourceFloor"></select></label><label>Place<select id="source"></select></label></div>
+      <div class="field-title">Going to</div>
+      <label>Floor<select id="destFloor"></select></label>
+      <label>Destination type<select id="destinationType"><option value="rooms">Rooms & places</option><option value="bathroom">Bathroom</option><option value="exit">Building exit</option><option value="emergency">Emergency exit / assistance</option></select></label>
+      <label id="destinationField">Destination<select id="destination"></select></label>
+      <p id="destinationDetails" class="subtle"></p>
+      <section id="emergencyInfo" class="emergency" hidden><h2>Emergency exits</h2><p id="emergencyText"></p><p>For an immediate emergency, call 911. This map does not provide a verified evacuation route.</p></section>
+      <p id="formStatus" class="subtle" role="status"></p>
+      <label class="check"><input id="voice" type="checkbox" checked> Spoken directions</label>
+      <button id="start" class="primary">Start journey →</button>
+    </aside>
+    <section id="journey" class="experience" hidden>
+      <div class="toolbar"><select id="floorSelect" aria-label="View floor"></select></div>
+      <div id="campusJourney" hidden><div id="outdoorMap" aria-label="Interactive campus map"></div><p id="tileStatus" class="subtle" hidden>Street map tiles could not load. The seeded route and building markers remain visible.</p></div>
+      <div id="scene"></div>
+      <div class="map-legend">↕ Elevator <span>WC Bathroom approach</span><span>EXIT Building exit</span></div>
+      <div class="guidance" role="status" aria-live="polite"><p id="cueMeta"></p><h2 id="instruction"></h2><p id="detail"></p><div class="actions"><button id="next" class="primary">Next step</button><button id="repeat">Repeat</button></div><p class="subtle">Advance when you reach each landmark. Position is set manually.</p></div>
+    </section>
+  </main>
+  <button id="voiceFab" class="voice-fab" aria-label="Talk to GoGo" aria-haspopup="dialog">Talk</button>
+  <section id="assistantPanel" class="assistant-panel" role="dialog" aria-modal="true" aria-labelledby="assistantTitle" hidden>
+    <div class="assistant-head"><div><span>VOICE ASSISTANT</span><h2 id="assistantTitle">GoGo</h2></div><button id="assistantClose" aria-label="Close voice assistant">Close</button></div>
+    <p id="assistantStatus" class="assistant-status" role="status" aria-live="polite">Ready</p>
+    <div id="assistantLog" class="assistant-log" role="log" aria-live="polite"></div>
+    <section id="missingCard" class="missing-card" hidden><strong>Map detail needed</strong><p id="missingText"></p><button id="saveMissing">Save data request</button></section>
+  </section>
+  <div id="assistantBackdrop" class="assistant-backdrop" hidden></div>
+  <script src="vendor/leaflet/leaflet.js"></script><script type="module" src="app.js"></script>
+</body>
+</html>

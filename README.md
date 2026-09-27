@@ -54,14 +54,16 @@ Floor traces and outdoor routes are approximate demo data; some elevator links a
 
 ## Android
 
-[Download GoGo 2D 0.4 APK](releases/GoGo-2D-0.4.apk) for Android 8 or later. Package: `dev.gogo.traveler.map2d`, version code 5. It uses the same development signing key as 0.3.1. Signing keys and SDK tools are intentionally excluded from Git.
+[Download GoGo Traveler 0.7 APK](releases/GoGo-Traveler-0.7.apk) for Android 8 or later. Package: `dev.gogo.traveler`, version code 8. This development build includes every available floor for all five demo buildings, one-tap Talk, foreground “Hey GoGo” detection with an acknowledgment tone and optional local Ollama interpretation.
 
 ```sh
 node scripts/sync-android-web.mjs
-python scripts/build-apk.py --tools ../work/android-tools --standalone --output releases/GoGo-2D-0.4.apk
+python scripts/build-apk.py --tools ../work/android-tools --output releases/GoGo-Traveler-0.7.apk
 ```
 
-The manual builder expects JDK 17, Android platform 35 and build tools 35.0.0 under the supplied tools path. The standard Gradle Android project is in `traveler-app`. APK signing, alignment, integrity and asset parity passed. Phone installation, native Back gestures and status-bar spacing still need physical-device verification.
+The manual builder expects JDK 17, Android platform 35 and build tools 35.0.0 under the supplied tools path. The standard Gradle Android project is in `traveler-app`. APK signing, alignment, integrity and asset parity passed. Phone installation, microphone recognition and native Back gestures still need physical-device verification.
+
+Voice commands such as “take me to room 3610,” “next step,” “repeat,” and “where am I” run through the app’s mapped route data. Ollama receives only open-ended requests and the active building context; its proposed destination is checked against the catalog before navigation starts. Missing room or accessibility details become saved data requests. See [Voice assistant setup](docs/VOICE_ASSISTANT.md).
 
 ## Checks
 
@@ -72,4 +74,4 @@ node scripts/test-positioning-2d.mjs
 node scripts/test-amenities.mjs
 ```
 
-Checks cover original and imported room routes, step-free bathroom/exit approaches, obstruction rerouting, outdoor routes and all 22 floors. Android assets mirror `building-demo`; rerun the sync script after web changes.
+Checks cover original and imported room routes, step-free bathroom/exit approaches, outdoor routes, and every available floor across all five buildings. The website and Android app keep separate interfaces while sharing the same building and routing data.

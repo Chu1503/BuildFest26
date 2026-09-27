@@ -1,11 +1,11 @@
 import {planRoute,cueFor,nodes,catalog} from './routing.js';
 import {floors,selectBuilding,activeId,model} from './active-building.js';
 import {places,outdoorRoute} from './campus.js';
-import {BuildingViewer} from './viewer.js';
+import {BuildingViewer} from './viewer.js?v=3';
 import {amenities,refreshAmenities} from './amenities.js';
 
 const $=id=>document.getElementById(id);
-let viewer,path=[],index=0,mode='overview',playing=false,progress=0,outdoor=false,campusMap,routeLayer,last=0;
+let viewer,path=[],index=0,mode='overview',playing=false,progress=0,outdoor=false,journeyStarted=false,campusMap,routeLayer,last=0;
 const floorName=f=>floors.find(x=>x.id===f)?.name||(f===0?'Garden':`Floor ${f}`);
 const options=(el,items,value)=>{
   el.replaceChildren(...items.map(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;return option;}));
@@ -38,7 +38,8 @@ function setMode(next){
 }
 
 function setHeading(){
-  if(path[index+1])viewer?.setHeading(nodes[path[index]].p,nodes[path[index+1]].p);
+  const current=nodes[path[index]],next=nodes[path[index+1]];
+  if(current&&next)viewer?.setHeading(current.p,next.p);
 }
 
 function renderCue(){
@@ -69,6 +70,7 @@ function plan(){
   $('start').disabled=!path.length;
   $('formStatus').textContent=emergency?'':path.length?'':$('destinationType').value==='bathroom'?'No bathroom mapped on this floor.':'Choose another destination.';
   renderCue();
+  if(!journeyStarted&&viewer){viewer.view='all';viewer.zoom=floors.length>=6?.75:.82;$('floorSelect').value='all';viewer.updateVisibility();}
 }
 
 function refreshFloorControls(){
@@ -80,6 +82,7 @@ function refreshFloorControls(){
 }
 
 function changeBuilding(){
+  path=[];index=0;playing=false;progress=0;journeyStarted=false;
   selectBuilding($('buildingChoice').value);
   refreshAmenities();
   viewer?.loadBuilding();
@@ -95,7 +98,7 @@ function changeBuilding(){
   $('emergencyText').textContent=activeId==='morgridge'?'Use posted exits. If you cannot use stairs, use the emergency phone by the elevators. Do not use elevators during a fire.':'Follow posted exit signs and building instructions. Do not use elevators during a fire.';
   setMode('overview');
   plan();
-  if(viewer){viewer.view='all';viewer.zoom=.75;viewer.updateVisibility();}
+  if(viewer){viewer.view='all';viewer.zoom=floors.length>=6?.75:.82;viewer.updateVisibility();}
   $('floorSelect').value='all';
 }
 
@@ -139,9 +142,9 @@ try{
 }catch(error){$('renderError').hidden=false;console.error(error);}
 changeBuilding();
 
-for(const [id,value] of [['overview','overview'],['pov','pov'],['keyboard','manual']])$(id).onclick=()=>{setStage(false);setMode(value);$('back').hidden=value==='overview';};
-$('back').onclick=()=>{playing=false;setStage(false);setMode('overview');if(viewer){viewer.view='all';viewer.zoom=.75;viewer.updateVisibility();}$('floorSelect').value='all';$('back').hidden=true;};
-$('start').onclick=()=>{plan();if(!path.length)return;$('back').hidden=false;setStage($('journeyType').value==='outdoor');if(!outdoor){setMode('pov');renderCue();speak();}};
+for(const [id,value] of [['overview','overview'],['pov','pov'],['keyboard','manual']])$(id).onclick=()=>{journeyStarted=value!=='overview';setStage(false);setMode(value);$('back').hidden=value==='overview';};
+$('back').onclick=()=>{journeyStarted=false;playing=false;setStage(false);setMode('overview');if(viewer){viewer.view='all';viewer.zoom=floors.length>=6?.75:.82;viewer.updateVisibility();}$('floorSelect').value='all';$('back').hidden=true;};
+$('start').onclick=()=>{plan();if(!path.length)return;journeyStarted=true;$('back').hidden=false;setStage($('journeyType').value==='outdoor');if(!outdoor){setMode('pov');renderCue();speak();}};
 $('next').onclick=advance;
 $('repeat').onclick=()=>{if(!outdoor)speak();};
 $('play').onclick=()=>{if(!path.length||outdoor)return;if(index===path.length-1)index=0;playing=!playing;progress=0;if(playing)setMode('pov');renderCue();};
