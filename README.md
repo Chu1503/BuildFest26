@@ -10,7 +10,7 @@ Built at Badger BuildFest 2026.
 
 ## Why this exists
 
-We started from a torn knee that couldn't manage a staircase. The disability was temporary but it was long enough to realize that for thousands of people, it never ends. That's what turned this from a hackathon idea into GoGo: something we wanted to build bigger than ourselves.
+We started from a torn knee that couldn't manage a staircase. The disability was temporary but it was long enough to realize that for thousands of people, it never ends. The intention with GoGo is to build something bigger than ourselves.
 
 Accessibility is one of those problems that's been hard to solve for decades.  We're Badgers building for Badgers, applying emerging tech and innovation to a historically stubborn problem.
 
