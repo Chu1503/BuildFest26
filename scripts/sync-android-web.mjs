@@ -1,0 +1,2 @@
+import fs from 'node:fs';
+const src=new URL('../building-demo/',import.meta.url),dest=new URL('../traveler-app/app/src/main/assets/web/',import.meta.url);fs.mkdirSync(dest,{recursive:true});for(const f of ['index.html','style.css','app.js','viewer.js','building.js','catalog-data.js','routing.js','positioning.js'])fs.copyFileSync(new URL(f,src),new URL(f,dest));fs.cpSync(new URL('vendor/',src),new URL('vendor/',dest),{recursive:true});console.log('Android 3D assets synced.');

@@ -10,3 +10,5 @@ local.properties
 .env
 .env.*
 !*.example
+
+*.apk.idsig
