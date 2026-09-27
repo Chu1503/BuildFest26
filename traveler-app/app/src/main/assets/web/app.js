@@ -3,7 +3,7 @@ import {floors,selectBuilding,activeId,model} from './active-building.js';
 import {places,outdoorRoute} from './campus.js';
 import {BuildingViewer} from './viewer-2d.js';
 import {amenities,refreshAmenities,accessibility} from './amenities.js';
-import {cleanSpeech as clean,floorFromSpeech,floorOnlyRequest} from './voice-parse.js';
+import {bestCatalogMatch,cleanSpeech as clean,floorFromSpeech,floorOnlyRequest} from './voice-parse.js';
 const $=id=>document.getElementById(id);
 document.documentElement.classList.add('map2d');
 let viewer,path=[],index=0,screen='home',outdoorStage=false,campusMap,routeLayer;
@@ -45,16 +45,17 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSpeech(
 // Voice assistant: local navigation commands stay deterministic; Ollama only interprets
 // open-ended requests against the currently loaded building catalog.
 let assistantRequest=0,pendingRequest='',missingRequest=null,pendingQuestion=null,voiceActive=false,confirmedLocation=null,pendingDestination=null;
-const DEFAULT_PHONE_OLLAMA_URL='http://192.168.1.110:11434',BROWSER_OLLAMA_URL='http://127.0.0.1:11434',OLLAMA_MODEL='llama3.2:3b';
+const DEFAULT_PHONE_OLLAMA_URL='http://192.168.1.110:11434',BROWSER_OLLAMA_URL='http://127.0.0.1:11434',OLLAMA_MODEL='qwen3:4b';
+const BUILDING_ALIASES={morgridge:['morgridge'],union:['union','the union'],library:['college library'],discovery:['discovery'],chazen:['chazen']};
 const BrowserSpeech=window.SpeechRecognition||window.webkitSpeechRecognition;
 let browserRecognizer=null,browserSpeechToken=0,browserWakeEnabled=true;
 function openAssistant(){
- voiceActive=true;$('voiceFab').classList.add('active');$('voiceFab').setAttribute('aria-label','Stop voice assistant');
+ voiceActive=true;$('voiceFab').classList.add('active');$('voiceWave').classList.add('active');$('voiceFab').setAttribute('aria-label','Stop voice assistant');
 }
 function stopVoiceSession(){if(window.GoGoNative?.stopVoice)window.GoGoNative.stopVoice();else{browserWakeEnabled=false;++browserSpeechToken;if(browserRecognizer)try{browserRecognizer.abort();}catch{}browserRecognizer=null;window.speechSynthesis?.cancel();}}
-function dismissVoiceVisual(){voiceActive=false;$('voiceFab').classList.remove('active','listening');$('voiceFab').setAttribute('aria-label','Talk to GoGo');}
+function dismissVoiceVisual(){voiceActive=false;$('voiceFab').classList.remove('active');$('voiceWave').classList.remove('active','listening');$('voiceFab').setAttribute('aria-label','Talk to GoGo');}
 function closeAssistant(){pendingQuestion=null;stopVoiceSession();dismissVoiceVisual();}
-function setAssistantStatus(text,listening=false){$('assistantStatus').textContent=text;$('voiceFab').classList.toggle('listening',listening);}
+function setAssistantStatus(text,listening=false){$('assistantStatus').textContent=text;$('voiceWave').classList.toggle('active',voiceActive);$('voiceWave').classList.toggle('listening',voiceActive&&listening);}
 function assistantSpeak(text){if($('profile').value==='deaf')return;if(window.GoGoNative)window.GoGoNative.speak(String(text));else if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(String(text)));}}
 function assistantReply(text){setAssistantStatus(text||'Ready');assistantSpeak(text);}
 function configuredOllamaUrl(){try{return localStorage.getItem('gogo-ollama-url')||(window.GoGoNative?DEFAULT_PHONE_OLLAMA_URL:BROWSER_OLLAMA_URL);}catch{return window.GoGoNative?DEFAULT_PHONE_OLLAMA_URL:BROWSER_OLLAMA_URL;}}
@@ -87,10 +88,11 @@ function findDestination(query){
  let matches=list.filter(d=>number&&clean(d.name).includes(number));
  if(!matches.length)matches=list.filter(d=>{const n=clean(d.name);return n.length>3&&(q.includes(n)||n.includes(q.replace(/^(take me to|go to|navigate to|find) /,'')));});
  if(!matches.length&&/bathroom|restroom/.test(q)){const requested=floorFromSpeech(q),floor=requested!==null?requested:Number($('sourceFloor').value);matches=list.filter(d=>d.kind==='bathroom'&&(requested===null||d.floor===requested)).sort((a,b)=>(a.floor===floor?-1:0)-(b.floor===floor?-1:0));}
+ if(!matches.length&&!floorOnlyRequest(q)){const ranked=bestCatalogMatch(q,list,{minimum:.58});if(ranked&&!ranked.ambiguous)matches=[ranked.item];}
  return matches[0]||null;
 }
-function buildingFromSpeech(value){const q=clean(value);return places.find(p=>{const name=clean(p.name),words=name.split(' ').filter(w=>w.length>=5);return q.includes(name)||words.some(w=>new RegExp(`\\b${w}\\b`).test(q));})||null;}
-function findMappedPlace(query,list,floor=null){const q=clean(query),number=(q.match(/\b\d{3,5}[a-z]?\b/)||[])[0];let candidates=floor===null?list:list.filter(d=>d.floor===Number(floor));let matches=candidates.filter(d=>number&&clean(d.name).includes(number));if(!matches.length)matches=candidates.filter(d=>{const n=clean(d.name);return n.length>2&&(q.includes(n)||n.includes(q.replace(/^(i am at|near|room|the) /,'')));});if(!matches.length&&/\b(entrance|entry)\b/.test(q))matches=candidates.filter(d=>d.id==='entrance'||/entrance|entry/.test(clean(d.name)));return matches[0]||null;}
+function buildingFromSpeech(value){const match=bestCatalogMatch(value,places,{aliases:BUILDING_ALIASES,minimum:.5});return match&&!match.ambiguous?match.item:null;}
+function findMappedPlace(query,list,floor=null){const q=clean(query),number=(q.match(/\b\d{3,5}[a-z]?\b/)||[])[0];let candidates=floor===null?list:list.filter(d=>d.floor===Number(floor));let matches=candidates.filter(d=>number&&clean(d.name).includes(number));if(!matches.length)matches=candidates.filter(d=>{const n=clean(d.name);return n.length>2&&(q.includes(n)||n.includes(q.replace(/^(i am at|near|room|the) /,'')));});if(!matches.length&&/\b(entrance|entry)\b/.test(q))matches=candidates.filter(d=>d.id==='entrance'||/entrance|entry/.test(clean(d.name)));if(!matches.length){const ranked=bestCatalogMatch(q,candidates,{minimum:.58});if(ranked&&!ranked.ambiguous)matches=[ranked.item];}return matches[0]||null;}
 function findSource(query,floor=null){return findMappedPlace(query,catalog.filter(c=>c.routable),floor);}
 function beginLocationCheck(destination=null){confirmedLocation=null;pendingDestination=destination;promptAndListen('Where are you now? Say the building, floor, and nearest room or mapped place.','sourceLocation',{buildingId:null,floor:null,placeId:null});}
 function beginVoiceInteraction(){if(screen==='journey'){openAssistant();if(window.GoGoNative?.startVoice)window.GoGoNative.startVoice();else{browserWakeEnabled=true;startBrowserSpeech(false);}return;}beginLocationCheck();}
@@ -163,8 +165,8 @@ function askOllama(query){
  pendingRequest=query;setAssistantStatus('Thinking…');const id='voice-'+(++assistantRequest);
  const context=mappedContext();
  const server=configuredOllamaUrl();if(window.GoGoNative?.askOllama){window.GoGoNative.askOllama(id,server,OLLAMA_MODEL,query,JSON.stringify(context));return;}
- const system=`You are GoGo, a concise voice-only indoor accessibility navigation agent. Use only the supplied building context. Never invent a room, floor, elevator, obstacle, or route. A new route requires a verbally confirmed starting building, floor, and mapped room or place. Infer a mapped room's floor from the destination catalog. A floor-only destination request must ask which room or place on that floor. If a required fact is missing or ambiguous, ask exactly one short question. Reply with JSON only using: {"speech":"short spoken response","action":"none|next|repeat|navigate|ask","destination":"exact mapped name or empty","question":"one short follow-up question or empty","missingData":"specific absent map detail or empty"}. Building context: ${JSON.stringify(context)}`;
- fetch(server+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:OLLAMA_MODEL,stream:false,format:'json',messages:[{role:'system',content:system},{role:'user',content:query}]})}).then(async response=>{if(!response.ok)throw Error(`HTTP ${response.status}`);return response.json();}).then(result=>window.GoGoAssistantReply(id,result.message?.content||'','')).catch(()=>window.GoGoAssistantReply(id,'','Start Ollama and check the server URL in Settings.'));
+ const system=`You are GoGo, a fast and concise indoor accessibility navigation interpreter. Resolve natural speech to the closest canonical option in the supplied building context. Tolerate omitted words such as hall or building, abbreviations, word-order changes, and minor speech-to-text errors. When the request provides most of the needed detail and one catalog option is clearly closest, choose it instead of asking the user to repeat. Ask exactly one short question only when a required fact is absent, the request is under half complete, or two options are genuinely ambiguous. Use only supplied values; never invent a room, floor, elevator, obstacle, or route. Infer mapped room floors from the destination catalog. A floor-only destination request must ask which room or place on that floor. Navigation actions are validated by the app. Reply with JSON only using: {"speech":"short spoken response","action":"none|next|repeat|navigate|ask","destination":"exact mapped name or empty","question":"one short follow-up question or empty","missingData":"specific absent map detail or empty"}. Building context: ${JSON.stringify(context)}`;
+ fetch(server+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:OLLAMA_MODEL,stream:false,think:false,format:'json',messages:[{role:'system',content:system},{role:'user',content:query}]})}).then(async response=>{if(!response.ok)throw Error(`HTTP ${response.status}`);return response.json();}).then(result=>window.GoGoAssistantReply(id,result.message?.content||'','')).catch(()=>window.GoGoAssistantReply(id,'','Start Ollama and check the server URL in Settings.'));
 }
 function submitAssistant(text){const value=String(text||'').trim();if(!value)return;openAssistant();pendingRequest=value;if(answerPendingQuestion(value))return;const local=runLocalCommand(value);if(local.handled){if(local.text)assistantReply(local.text);return;}askOllama(value);}
 window.GoGoAssistantReply=(requestId,reply,error)=>{

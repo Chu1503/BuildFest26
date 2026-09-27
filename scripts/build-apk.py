@@ -2,7 +2,7 @@
 Usage: python scripts/build-apk.py --tools /path/to/android-tools --output /path/app.apk
 Tools layout: jdk/*/bin, platforms-android-35/android-35, build-tools-35.0.0/android-15.
 """
-import argparse,pathlib,subprocess,zipfile,shutil,datetime,xml.etree.ElementTree as ET
+import argparse,pathlib,subprocess,zipfile,shutil,datetime,re,xml.etree.ElementTree as ET
 p=argparse.ArgumentParser();p.add_argument('--tools',required=True);p.add_argument('--output',required=True);p.add_argument('--keystore');p.add_argument('--standalone',action='store_true');a=p.parse_args()
 root=pathlib.Path(__file__).resolve().parents[1];tools=pathlib.Path(a.tools).resolve();out=pathlib.Path(a.output).resolve();out.parent.mkdir(parents=True,exist_ok=True)
 jdk=next((tools/'jdk').glob('*/bin'),None) or next(tools.glob('jdk-*/Contents/Home/bin'))
@@ -40,7 +40,10 @@ for f in sourceAssets.rglob('*'):
  relative=f.relative_to(sourceAssets)
  if relative.parts[:2]==('plans','plans'):continue
  dest=assets/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(f,dest)
-run([aapt2,'link','-o',build/'unsigned.apk','-I',platform,'--manifest',build/'AndroidManifest.xml','--min-sdk-version','26','--target-sdk-version','35','--version-code','15','--version-name','0.11-black-yellow-ui','-A',build/'assets'])
+gradle=(root/'traveler-app/app/build.gradle').read_text(encoding='utf-8')
+version_code=re.search(r'\bversionCode\s+(\d+)',gradle).group(1)
+version_name=re.search(r"\bversionName\s+['\"]([^'\"]+)",gradle).group(1)
+run([aapt2,'link','-o',build/'unsigned.apk','-I',platform,'--manifest',build/'AndroidManifest.xml','--min-sdk-version','26','--target-sdk-version','35','--version-code',version_code,'--version-name',version_name,'-A',build/'assets'])
 with zipfile.ZipFile(build/'unsigned.apk') as original, zipfile.ZipFile(build/'repacked.apk','w',compression=zipfile.ZIP_DEFLATED) as apk:
  for entry in original.infolist():apk.writestr(entry.filename,original.read(entry.filename),compress_type=zipfile.ZIP_STORED if entry.filename=='resources.arsc' else entry.compress_type)
  for f in dex.glob('*.dex'):apk.write(f,f.name)
