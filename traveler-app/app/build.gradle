@@ -6,8 +6,8 @@ android {
         applicationId 'dev.gogo.traveler'
         minSdk 26
         targetSdk 35
-        versionCode 14
-        versionName '0.10-location-voice'
+        versionCode 15
+        versionName '0.11-black-yellow-ui'
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }

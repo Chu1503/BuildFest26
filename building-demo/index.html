@@ -3,84 +3,75 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>GoGo · Building Demo</title>
+  <meta name="theme-color" content="#080808">
+  <title>GoGo</title>
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <header>
     <strong class="brand">GoGo</strong>
-    <span id="buildingName">Morgridge Hall</span>
   </header>
   <main>
     <aside id="planner">
       <label>Building<select id="buildingChoice"></select></label>
+      <section class="access-card" aria-label="Building accessibility"><span>Accessibility score</span><strong id="accessibilityScore"></strong></section>
       <label>Access preferences
         <select id="profile">
           <option value="wheelchair">Wheelchair</option>
-          <option value="blind">Blind / low vision</option>
-          <option value="deaf">Deaf / hard of hearing</option>
-          <option value="mobility">Limited mobility</option>
-          <option value="walking">No specific preference</option>
+          <option value="blind">Blind</option>
+          <option value="deaf">Deaf</option>
         </select>
       </label>
-      <label class="check"><input id="stepfree" type="checkbox" checked> Avoid stairs</label>
-      <div class="field-title">Start</div>
-      <label>Journey
-        <select id="journeyType">
-          <option value="indoor">Inside this building</option>
-          <option value="outdoor">Campus · Library Mall</option>
-        </select>
-      </label>
+      <input id="stepfree" type="checkbox" checked hidden>
+      <input id="voice" type="checkbox" checked hidden>
+      <div class="field-title">Starting from</div>
+      <select id="journeyType" hidden><option value="indoor" selected>Inside this building</option><option value="outdoor">Campus</option></select>
       <div id="indoorSource" class="pair">
         <label>Floor<select id="sourceFloor" aria-label="Starting floor"></select></label>
         <label>Place<select id="source" aria-label="Starting place"></select></label>
       </div>
-      <div class="field-title">Destination</div>
-      <label>Floor<select id="destFloor" aria-label="Destination floor"></select></label>
-      <label>Type
-        <select id="destinationType">
-          <option value="rooms">Rooms & places</option>
-          <option value="bathroom">Bathroom</option>
-          <option value="exit">Building exit</option>
-          <option value="emergency">Emergency help</option>
-        </select>
-      </label>
-      <label id="destinationField">Place<select id="destination"></select></label>
-      <section id="emergencyInfo" class="emergency" hidden>
-        <p id="emergencyText"></p>
-        <p>For an immediate emergency, call 911.</p>
-      </section>
-      <p id="formStatus" class="status" role="status"></p>
-      <label class="check"><input id="voice" type="checkbox" checked> Spoken directions</label>
-      <button id="start" class="primary">Start journey</button>
+      <div class="field-title">Going to</div>
+      <div class="pair">
+        <label>Floor<select id="destFloor" aria-label="Destination floor"></select></label>
+        <label>Type
+          <select id="destinationType">
+            <option value="rooms">Rooms &amp; places</option>
+            <option value="bathroom">Bathroom</option>
+            <option value="exit">Building exit</option>
+            <option value="emergency">Emergency exit</option>
+          </select>
+        </label>
+      </div>
+      <label id="destinationField">Destination<select id="destination"></select></label>
+      <p id="formStatus" class="status" role="status" hidden></p>
+      <button id="start" class="primary">Start</button>
     </aside>
     <section id="journey" class="experience">
       <div class="toolbar">
-        <button id="back" class="back" aria-label="Return to building view" hidden>Back</button>
+        <button id="back" class="icon-button" aria-label="Back to building overview" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.5 7.5 12 15 19.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="views" aria-label="Map view">
           <button id="overview" class="selected">Building</button>
           <button id="pov">POV</button>
           <button id="keyboard">Explore</button>
         </div>
-        <select id="floorSelect" aria-label="View floor"></select>
+        <select id="floorSelect" aria-label="View floor" hidden></select>
       </div>
       <div id="campusJourney" hidden>
         <div id="outdoorMap" aria-label="Interactive campus map"></div>
-        <p id="tileStatus" class="status" hidden>Map tiles unavailable.</p>
+        <p id="tileStatus" class="status" hidden></p>
       </div>
       <div id="scene">
         <div id="walkHint" hidden>W A S D or arrows to move · drag to look · E for elevator</div>
-        <div id="renderError" hidden>3D unavailable.</div>
+        <div id="renderError" hidden>3D view unavailable in this browser.</div>
       </div>
       <div class="guidance" role="status" aria-live="polite">
-        <p id="cueMeta">READY</p>
+        <p id="cueMeta" hidden>Ready</p>
         <h1 id="instruction">Choose a destination.</h1>
-        <p id="detail"></p>
         <div class="actions">
           <button id="next" class="primary">Next step</button>
           <button id="repeat">Repeat</button>
-          <button id="play">Preview route</button>
+          <button id="play" hidden>Preview route</button>
         </div>
       </div>
     </section>
@@ -88,10 +79,9 @@
   <dialog id="liftDialog">
     <h2>Choose a floor</h2>
     <select id="liftFloor" aria-label="Elevator destination"></select>
-    <button id="rideLift" class="primary">Go</button>
-    <button id="closeLift">Close</button>
+    <div class="dialog-actions"><button id="closeLift">Cancel</button><button id="rideLift" class="primary">Go</button></div>
   </dialog>
   <script src="vendor/leaflet/leaflet.js"></script>
-  <script type="module" src="app.js?v=4"></script>
+  <script type="module" src="app.js?v=6"></script>
 </body>
 </html>

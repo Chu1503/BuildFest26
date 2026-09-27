@@ -40,7 +40,7 @@ for f in sourceAssets.rglob('*'):
  relative=f.relative_to(sourceAssets)
  if relative.parts[:2]==('plans','plans'):continue
  dest=assets/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(f,dest)
-run([aapt2,'link','-o',build/'unsigned.apk','-I',platform,'--manifest',build/'AndroidManifest.xml','--min-sdk-version','26','--target-sdk-version','35','--version-code','14','--version-name','0.10-location-voice','-A',build/'assets'])
+run([aapt2,'link','-o',build/'unsigned.apk','-I',platform,'--manifest',build/'AndroidManifest.xml','--min-sdk-version','26','--target-sdk-version','35','--version-code','15','--version-name','0.11-black-yellow-ui','-A',build/'assets'])
 with zipfile.ZipFile(build/'unsigned.apk') as original, zipfile.ZipFile(build/'repacked.apk','w',compression=zipfile.ZIP_DEFLATED) as apk:
  for entry in original.infolist():apk.writestr(entry.filename,original.read(entry.filename),compress_type=zipfile.ZIP_STORED if entry.filename=='resources.arsc' else entry.compress_type)
  for f in dex.glob('*.dex'):apk.write(f,f.name)

@@ -1,8 +1,8 @@
 import {planRoute,cueFor,nodes,catalog} from './routing.js';
 import {floors,selectBuilding,activeId,model} from './active-building.js';
 import {places,outdoorRoute} from './campus.js';
-import {BuildingViewer} from './viewer.js?v=3';
-import {amenities,refreshAmenities} from './amenities.js';
+import {BuildingViewer} from './viewer.js?v=4';
+import {amenities,refreshAmenities,accessibility} from './amenities.js';
 
 const $=id=>document.getElementById(id);
 let viewer,path=[],index=0,mode='overview',playing=false,progress=0,outdoor=false,journeyStarted=false,campusMap,routeLayer,last=0;
@@ -12,11 +12,13 @@ const options=(el,items,value)=>{
   if(items.some(item=>String(item.id)===String(value)))el.value=value;
 };
 const destinations=()=>[...catalog.filter(item=>item.routable),...amenities.filter(item=>item.routable)];
+const destKind=()=>$('destinationType').value==='emergency'?'exit':$('destinationType').value;
+const cleanName=name=>name.replace(/\s*·\s*(?:mapped )?approach$/i,'');
 
 function populate(id,floor,preferred){
   let list=(id==='source'?catalog.filter(item=>item.routable):destinations()).filter(item=>item.floor===Number(floor));
-  if(id==='destination')list=$('destinationType').value==='rooms'?list.filter(item=>!item.kind):list.filter(item=>item.kind===$('destinationType').value);
-  options($(id),list,preferred);
+  if(id==='destination')list=$('destinationType').value==='rooms'?list.filter(item=>!item.kind):list.filter(item=>item.kind===destKind());
+  options($(id),list.map(item=>({...item,name:cleanName(item.name)})),preferred);
 }
 
 function stopSpeech(){if(window.GoGoNative)window.GoGoNative.stopSpeech();else window.speechSynthesis?.cancel();}
@@ -43,11 +45,10 @@ function setHeading(){
 }
 
 function renderCue(){
-  if(!path.length){$('cueMeta').textContent='READY';$('instruction').textContent='Choose a destination.';$('detail').textContent='';$('next').disabled=true;return;}
+  if(!path.length){$('cueMeta').textContent='Ready';$('instruction').textContent='Choose a destination.';$('next').disabled=true;return;}
   const node=nodes[path[index]],cue=currentCue();
   $('cueMeta').textContent=`${floorName(node.floor)} · ${index+1} / ${path.length}`;
   $('instruction').textContent=cue.text;
-  $('detail').textContent=$('profile').value==='blind'?(cue.detail||''):'';
   $('next').disabled=index===path.length-1;
   $('play').textContent=playing?'Pause preview':'Preview route';
   viewer?.setPosition(node.p);
@@ -59,16 +60,13 @@ function renderCue(){
 
 function plan(){
   stopSpeech();playing=false;progress=0;index=0;
-  const emergency=$('destinationType').value==='emergency';
   const destination=amenities.find(item=>item.id===$('destination').value)?.routeId||$('destination').value;
-  path=emergency||!$('source').value||!destination?[]:planRoute($('journeyType').value==='outdoor'?'entrance':$('source').value,destination,$('profile').value,'normal',{avoidStairs:$('stepfree').checked,mode:'comfort'}).path;
+  path=!$('source').value||!destination?[]:planRoute($('journeyType').value==='outdoor'?'entrance':$('source').value,destination,$('profile').value,'normal',{avoidStairs:$('stepfree').checked,mode:'comfort'}).path;
   viewer?.setRoute(path);
   const start=nodes[$('journeyType').value==='outdoor'?'entrance':$('source').value];
   if(start){viewer?.setPosition(start.p);viewer&&(viewer.view=String(start.floor));$('floorSelect').value=String(start.floor);viewer?.updateVisibility();}
-  $('emergencyInfo').hidden=!emergency;
-  $('start').hidden=emergency;
   $('start').disabled=!path.length;
-  $('formStatus').textContent=emergency?'':path.length?'':$('destinationType').value==='bathroom'?'No bathroom mapped on this floor.':'Choose another destination.';
+  $('formStatus').textContent=path.length?'':destKind()==='bathroom'?'No bathroom mapped on this floor.':'No step-free route to that place. Try another floor.';
   renderCue();
   if(!journeyStarted&&viewer){viewer.view='all';viewer.zoom=floors.length>=6?.75:.82;$('floorSelect').value='all';viewer.updateVisibility();}
 }
@@ -88,14 +86,12 @@ function changeBuilding(){
   viewer?.loadBuilding();
   refreshFloorControls();
   const preferred=catalog.find(item=>item.id===(model()?.defaultRoom||'space-2-Library')&&item.routable)||catalog.find(item=>item.routable);
-  $('buildingName').textContent=places.find(item=>item.id===activeId)?.name||'Building demo';
   $('sourceFloor').value=String(nodes.entrance.floor);
   $('destFloor').value=String(preferred.floor);
   $('destinationType').value='rooms';
-  $('destinationField').hidden=false;
+  $('accessibilityScore').textContent=accessibility(activeId).score;
   populate('source',nodes.entrance.floor,'entrance');
   populate('destination',preferred.floor,preferred.id);
-  $('emergencyText').textContent=activeId==='morgridge'?'Use posted exits. If you cannot use stairs, use the emergency phone by the elevators. Do not use elevators during a fire.':'Follow posted exit signs and building instructions. Do not use elevators during a fire.';
   setMode('overview');
   plan();
   if(viewer){viewer.view='all';viewer.zoom=floors.length>=6?.75:.82;viewer.updateVisibility();}
@@ -111,9 +107,8 @@ function showOutdoor(){
   }
   if(routeLayer)routeLayer.remove();
   if(route){routeLayer=L.polyline(route.points,{color:'#287d69',weight:6}).addTo(campusMap);requestAnimationFrame(()=>{campusMap.invalidateSize();campusMap.fitBounds(routeLayer.getBounds(),{padding:[35,35],maxZoom:17});});}
-  $('cueMeta').textContent='CAMPUS';
+  $('cueMeta').textContent='Campus';
   $('instruction').textContent=`Head to ${places.find(place=>place.id===activeId)?.name||'the building'}`;
-  $('detail').textContent='';
   $('next').textContent='Enter building';
   $('next').disabled=!route;
 }
@@ -154,13 +149,12 @@ $('journeyType').onchange=()=>{$('indoorSource').hidden=$('journeyType').value==
 $('sourceFloor').onchange=()=>{populate('source',$('sourceFloor').value,'e'+$('sourceFloor').value);plan();};
 $('destFloor').onchange=()=>{populate('destination',$('destFloor').value);plan();};
 $('destinationType').onchange=()=>{
-  const type=$('destinationType').value,emergency=type==='emergency';
-  $('destinationField').hidden=emergency;
-  if(['bathroom','exit'].includes(type)&&!amenities.some(item=>item.kind===type&&item.floor===Number($('destFloor').value))){const first=amenities.find(item=>item.kind===type);if(first)$('destFloor').value=String(first.floor);}
+  const type=destKind();
+  if(type!=='rooms'&&!amenities.some(item=>item.kind===type&&item.floor===Number($('destFloor').value))){const first=amenities.find(item=>item.kind===type);if(first)$('destFloor').value=String(first.floor);}
   populate('destination',$('destFloor').value);plan();
 };
 for(const id of ['source','destination','stepfree'])$(id).onchange=plan;
-$('profile').onchange=()=>{$('stepfree').checked=['wheelchair','blind','mobility'].includes($('profile').value);$('voice').checked=$('profile').value!=='deaf';plan();};
+$('profile').onchange=()=>{$('stepfree').checked=true;$('voice').checked=true;plan();};
 $('voice').onchange=()=>{if(!$('voice').checked)stopSpeech();};
 $('rideLift').onclick=()=>{viewer?.useElevator(Number($('liftFloor').value));$('floorSelect').value=String(viewer.floor);$('liftDialog').close();};
 $('closeLift').onclick=()=>$('liftDialog').close();

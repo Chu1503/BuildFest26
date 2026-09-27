@@ -60,7 +60,7 @@ public class MainActivity extends Activity implements RecognitionListener {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         web = new WebView(this);
-        web.setBackgroundColor(0xfff2f5f5);
+        web.setBackgroundColor(0xff080808);
         web.getSettings().setJavaScriptEnabled(true);
         web.getSettings().setDomStorageEnabled(true);
         web.getSettings().setAllowFileAccess(false);
@@ -85,7 +85,7 @@ public class MainActivity extends Activity implements RecognitionListener {
         });
 
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(0xfff2f5f5);
+        root.setBackgroundColor(0xff080808);
         root.addView(web, new FrameLayout.LayoutParams(-1, -1));
         if (Build.VERSION.SDK_INT >= 30) getWindow().setDecorFitsSystemWindows(false);
         else getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
