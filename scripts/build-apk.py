@@ -32,7 +32,7 @@ source=root/'traveler-app/app/src/main/java/dev/gogo/traveler/MainActivity.java'
 java=executable(jdk,'java');javac=executable(jdk,'javac');aapt2=executable(sdk,'aapt2');zipalign=executable(sdk,'zipalign')
 run([javac,'-encoding','UTF-8','-source','8','-target','8','-classpath',platform,'-d',classes,source])
 run([java,'-cp',sdk/'lib/d8.jar','com.android.tools.r8.D8','--lib',platform,'--min-api','26','--output',dex,*classes.rglob('*.class')])
-ET.register_namespace('android','http://schemas.android.com/apk/res/android');manifest=ET.parse(root/'traveler-app/app/src/main/AndroidManifest.xml');manifest.getroot().set('package','dev.gogo.traveler.map2d' if a.standalone else 'dev.gogo.traveler');android='{http://schemas.android.com/apk/res/android}';manifest.find('application/activity').set(android+'name','dev.gogo.traveler.MainActivity');manifest.find('application').set(android+'label','GoGo 2D' if a.standalone else 'GoGo Traveler');manifest.write(build/'AndroidManifest.xml',encoding='utf-8',xml_declaration=True)
+ET.register_namespace('android','http://schemas.android.com/apk/res/android');manifest=ET.parse(root/'traveler-app/app/src/main/AndroidManifest.xml');manifest.getroot().set('package','dev.gogo.traveler.map2d' if a.standalone else 'dev.gogo.traveler');android='{http://schemas.android.com/apk/res/android}';manifest.find('application/activity').set(android+'name','dev.gogo.traveler.MainActivity');manifest.find('application').set(android+'label','GoGo 2D' if a.standalone else 'GoGo');manifest.write(build/'AndroidManifest.xml',encoding='utf-8',xml_declaration=True)
 assets=build/'assets/web';assets.mkdir(parents=True)
 sourceAssets=root/'traveler-app/app/src/main/assets/web'
 for f in sourceAssets.rglob('*'):
@@ -40,7 +40,9 @@ for f in sourceAssets.rglob('*'):
  relative=f.relative_to(sourceAssets)
  if relative.parts[:2]==('plans','plans'):continue
  dest=assets/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(f,dest)
-run([aapt2,'link','-o',build/'unsigned.apk','-I',platform,'--manifest',build/'AndroidManifest.xml','--min-sdk-version','26','--target-sdk-version','35','--version-code','15','--version-name','0.11-black-yellow-ui','-A',build/'assets'])
+compiled=build/'compiled-res.zip'
+run([aapt2,'compile','--dir',root/'traveler-app/app/src/main/res','-o',compiled])
+run([aapt2,'link','-o',build/'unsigned.apk','-I',platform,'--manifest',build/'AndroidManifest.xml','--min-sdk-version','26','--target-sdk-version','35','--version-code','17','--version-name','0.12.1','-A',build/'assets','-R',compiled])
 with zipfile.ZipFile(build/'unsigned.apk') as original, zipfile.ZipFile(build/'repacked.apk','w',compression=zipfile.ZIP_DEFLATED) as apk:
  for entry in original.infolist():apk.writestr(entry.filename,original.read(entry.filename),compress_type=zipfile.ZIP_STORED if entry.filename=='resources.arsc' else entry.compress_type)
  for f in dex.glob('*.dex'):apk.write(f,f.name)
