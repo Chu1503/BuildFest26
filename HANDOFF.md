@@ -1,43 +1,53 @@
-# GoGo project handoff
+# GoGo smart voice handoff
 
-## Current deliverables
+## Current experience
 
-- `building-demo/`: one-page browser demo with the planner on the left and interactive multi-floor 3D building view on the right.
-- `traveler-app/`: Android WebView application with the mobile 2D interface and native bridges for speech, Ollama and text-to-speech.
-- `releases/GoGo-Traveler-0.10.apk`: signed Android 8+ prototype, package `dev.gogo.traveler`, version code 14.
-- Five building datasets: Morgridge Hall, Memorial Union, College Library, Discovery and Chazen. All supplied floors appear in both interfaces.
+- Uses the solid black, white, and yellow visual system with no gradients.
+- Keeps the simplified indoor planner and navigation interface on phone and desktop.
+- Shows one microphone button at rest. During a voice session it changes to a cross and reveals a floating seven-bar waveform to its left. The waveform animates only while speech recognition is actively listening.
+- Keeps room selection, routing, Next step, Repeat, the wake phrase, text-to-speech, and Ollama server settings working.
 
-## Voice behavior
+## Voice intelligence changes
 
-`MainActivity.java` owns microphone permission, `SpeechRecognizer`, foreground “Hey GoGo” detection, Android TTS, spoken prompt-then-listen turns and the native Ollama HTTP request. `traveler-app/app/src/main/assets/web/app.js` owns the voice state, current-location context and validation against the active route catalog. An LLM response cannot create a route node or navigate to an unmapped destination.
+- Added ranked matching against actual mapped buildings, rooms, and places.
+- Accepts short building names such as “Morgridge,” “Union,” “Discovery,” and “Chazen.”
+- Tolerates omitted generic words, reordered words, and small speech-to-text spelling errors such as “Morgrige.”
+- Selects a clear mapped match when most of the request is present. It asks one focused follow-up when a required field is absent or the match is genuinely ambiguous.
+- Still validates every resolved value against the local catalog and route graph, so the language model cannot create nonexistent rooms, floors, or routes.
+- Upgraded the configured free local model from `llama3.2:3b` to `qwen3:4b`.
 
-The visible voice interaction is one microphone circle. It becomes a cross whenever the voice session is active and uses bright expanding green rings only while the recognizer is listening; no transcript, text response or assistant modal is rendered. Tapping the cross cancels recognition and speech. Successful destination requests start the map immediately. “Next,” “repeat,” and “next direction” operate on the active route and speak the resulting cue.
+## Local model setup
 
-Before every new voice-planned route, GoGo asks for the current building, floor, and nearest mapped room or place. Answers can arrive together or across several turns, and room numbers can infer their floor. Destination phrases such as “floor 5,” “5th floor,” and “fifth floor” are normalized to the same floor and trigger the spoken follow-up “Which room or place?” rather than an identification error. A room on a different floor is corrected and confirmed aloud.
+Install Ollama and download the configured model:
 
-The context sent to Ollama includes whether the current location was verbally confirmed, the confirmed building/floor/place, selected destination floor/place, access profile, navigation state, current cue, all floors and mapped destinations. Deterministic matching handles location collection, floor-only requests, known rooms and route controls before Ollama. Missing or ambiguous facts trigger one spoken follow-up and native TTS resumes command recognition when the question finishes.
-
-Unknown map details are stored automatically as `gogo-missing-data`. The Ollama model is a build-time constant; the server URL is editable from the top-right Settings panel and persists as `gogo-ollama-url` in local storage.
-
-## Verification completed
-
-- 3,165 routes across five buildings, 208 reverse sources, floor coverage, sensor freshness and cue checks.
-- Voice parser checks for “floor 5,” “5th floor,” “fifth floor,” garden level and room-number disambiguation.
-- Java compiled against Android API 35.
-- APK is ZIP-aligned and signed with APK signature schemes v2 and v3.
-- Packaged `index.html`, `app.js` and `style.css` exactly match source.
-- Manifest contains `INTERNET` and `RECORD_AUDIO`; min SDK 26, target SDK 35.
-
-Physical microphone and wake recognition still require final testing on an Android device. The current Mac endpoint is `http://192.168.1.110:11434`; use Settings after a Wi-Fi/IP change. Building geometry remains prototype data and is not validated for real-world navigation.
-
-## Useful commands
-
-```sh
-python -m http.server 8000 --directory building-demo
-node scripts/test-routes.mjs
-node scripts/test-integration.mjs
-node scripts/test-positioning-2d.mjs
-node scripts/test-amenities.mjs
+```powershell
+ollama pull qwen3:4b
 ```
 
-Read `docs/VOICE_ASSISTANT.md` for Ollama setup. The Vercel deployment should use `building-demo` as its root/output directory; the APK remains a separate downloadable artifact.
+Start Ollama, then set the computer's reachable Ollama URL from the Settings icon in the app when testing on a phone. The phone and computer must be on the same trusted network.
+
+## Verification
+
+- Voice parser checks pass, including `morgridge`, `Morgridge Hall`, `morgrige`, `the union`, `chazen`, and `discovery`.
+- 3,165 route cases across all five buildings pass.
+- Amenity, integration, positioning, floor-model, syntax, and diff checks pass.
+- Android debug build completes successfully with API 35 tools.
+- APK package: `dev.gogo.traveler`
+- Version code: `18`
+- Version name: `0.13.1`
+- Minimum Android: API 26
+- APK Signature Scheme v2 verification and ZIP alignment pass.
+
+## Suggested commit
+
+```text
+feat(voice): add fuzzy navigation matching and listening waveform
+```
+
+Suggested commands:
+
+```powershell
+git add HANDOFF.md docs/VOICE_ASSISTANT.md scripts/test-voice.mjs scripts/build-apk.py traveler-app
+git commit -m "feat(voice): add fuzzy navigation matching and listening waveform"
+git push origin master
+```

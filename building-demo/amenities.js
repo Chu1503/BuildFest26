@@ -1,4 +1,5 @@
 import {nodes,catalog,floors,world,activeId} from './active-building.js';
+import {places} from './campus.js';
 // Amenity routes end at existing graph approaches. No new unverified walkway is added.
 export const amenities=[];
 export function refreshAmenities(){
@@ -10,3 +11,4 @@ export function refreshAmenities(){
  if(activeId==='union')for(const [floor,points] of [[1,[[331,292],[397,351]]],[2,[[696,309],[579,376],[563,422]]],[3,[[594,286]]],[4,[[107,116]]],[5,[[631,171],[344,237],[436,245]]]])for(const [i,p] of points.entries())add('bathroom',`${floors.find(f=>f.id===floor).name} bathrooms ${i+1} · approach`,floor,world(floor,p),'Restroom symbols traced from the supplied Memorial Union plan. Route ends at a nearby mapped place; follow signs to the restroom door. Accessible-stall details are not confirmed.');
  for(const id of ['entrance',...(activeId==='morgridge'?['university']:[])])if(nodes[id])amenities.push({id:'amenity-'+amenities.length,routeId:id,kind:'exit',name:nodes[id].name+' · exit',floor:nodes[id].floor,p:nodes[id].p,routable:true,detail:'Mapped building entrance/exit. Not a verified emergency evacuation route.'});
 }
+export function accessibility(id){if(id==='morgridge')return {score:'95 / 100'};const place=places.find(item=>item.id===id);return {score:`${place?.score ?? '—'} / 100`};}

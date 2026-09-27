@@ -2,7 +2,9 @@
 
 ## What works without Ollama
 
-The Android app handles mapped navigation commands directly: room requests, next step, repeat, current location, building selection and access-profile changes. Tap the microphone to begin. It changes to a cross for the full voice session and shows bright expanding rings while actively listening; no transcript or assistant panel is displayed. Tap the cross to stop. While the app is open, saying **Hey GoGo** plays an acknowledgment tone and starts the same voice flow.
+The Android app handles mapped navigation commands directly: room requests, next step, repeat, current location, building selection and access-profile changes. Tap the microphone to begin. It changes to a cross and opens an animated waveform to its left while the app is listening. Tap the cross to stop. While the app is open, saying **Hey GoGo** plays an acknowledgment tone and starts the same voice flow.
+
+Building and destination matching accepts canonical names, useful short names and minor transcription errors. For example, “Morgridge,” “Morgridge Hall,” and a close speech-to-text spelling all select Morgridge Hall. The app chooses a clearly closest mapped option when most details are present and asks one focused follow-up only when a required detail is missing or the result is genuinely ambiguous.
 
 For a new route, GoGo first asks for the current building, floor, and nearest mapped room or place. It remembers partial answers across spoken follow-ups. A destination request containing only a floor, including “floor 5,” “5th floor,” or “fifth floor,” causes GoGo to ask which room or place on that floor.
 
@@ -14,7 +16,7 @@ Android asks for microphone permission the first time. The wake option only runs
 2. Download the configured model:
 
    ```sh
-   ollama pull llama3.2:3b
+   ollama pull qwen3:4b
    ```
 
 3. Open Ollama, or start its server from Terminal with `ollama serve`.
