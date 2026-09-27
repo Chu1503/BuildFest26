@@ -2,6 +2,10 @@
 node_modules/
 .vercel/
 .gradle/
+.gradle-user-home/
+.android-user-home/
+android-sdk/
+work/
 **/build/
 local.properties
 *.keystore

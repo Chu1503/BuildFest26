@@ -1,8 +1,8 @@
 import {planRoute,cueFor,nodes,catalog} from './routing.js';
 import {floors,selectBuilding,activeId,model} from './active-building.js';
 import {places,outdoorRoute} from './campus.js';
-import {BuildingViewer} from './viewer.js?v=4';
-import {amenities,refreshAmenities,accessibility} from './amenities.js';
+import {BuildingViewer} from './viewer.js?v=5';
+import {amenities,refreshAmenities,accessibility} from './amenities.js?v=4';
 
 const $=id=>document.getElementById(id);
 let viewer,path=[],index=0,mode='overview',playing=false,progress=0,outdoor=false,journeyStarted=false,campusMap,routeLayer,last=0;
@@ -14,6 +14,7 @@ const options=(el,items,value)=>{
 const destinations=()=>[...catalog.filter(item=>item.routable),...amenities.filter(item=>item.routable)];
 const destKind=()=>$('destinationType').value==='emergency'?'exit':$('destinationType').value;
 const cleanName=name=>name.replace(/\s*·\s*(?:mapped )?approach$/i,'');
+const syncDestinationField=()=>$('destinationField').hidden=$('destinationType').value!=='rooms';
 
 function populate(id,floor,preferred){
   let list=(id==='source'?catalog.filter(item=>item.routable):destinations()).filter(item=>item.floor===Number(floor));
@@ -49,6 +50,7 @@ function renderCue(){
   const node=nodes[path[index]],cue=currentCue();
   $('cueMeta').textContent=`${floorName(node.floor)} · ${index+1} / ${path.length}`;
   $('instruction').textContent=cue.text;
+  if(amenities.some(item=>item.id===$('destination').value)&&index===path.length-1)$('instruction').textContent='Arrived.';
   $('next').disabled=index===path.length-1;
   $('play').textContent=playing?'Pause preview':'Preview route';
   viewer?.setPosition(node.p);
@@ -89,6 +91,7 @@ function changeBuilding(){
   $('sourceFloor').value=String(nodes.entrance.floor);
   $('destFloor').value=String(preferred.floor);
   $('destinationType').value='rooms';
+  syncDestinationField();
   $('accessibilityScore').textContent=accessibility(activeId).score;
   populate('source',nodes.entrance.floor,'entrance');
   populate('destination',preferred.floor,preferred.id);
@@ -150,6 +153,7 @@ $('sourceFloor').onchange=()=>{populate('source',$('sourceFloor').value,'e'+$('s
 $('destFloor').onchange=()=>{populate('destination',$('destFloor').value);plan();};
 $('destinationType').onchange=()=>{
   const type=destKind();
+  syncDestinationField();
   if(type!=='rooms'&&!amenities.some(item=>item.kind===type&&item.floor===Number($('destFloor').value))){const first=amenities.find(item=>item.kind===type);if(first)$('destFloor').value=String(first.floor);}
   populate('destination',$('destFloor').value);plan();
 };
