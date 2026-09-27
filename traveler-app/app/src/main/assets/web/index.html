@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>GoGo</title>
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=0.10">
 </head>
 <body>
   <header><button id="back" aria-label="Go back">← Back</button><strong class="brand">GoGo</strong><button id="settingsButton">Settings</button></header>
@@ -36,10 +36,10 @@
       <div class="guidance" role="status" aria-live="polite"><p id="cueMeta"></p><h2 id="instruction"></h2><p id="detail"></p><div class="actions"><button id="next" class="primary">Next step</button><button id="repeat">Repeat</button></div><p class="subtle">Advance when you reach each landmark. Position is set manually.</p></div>
     </section>
   </main>
-  <button id="voiceFab" class="voice-fab" aria-label="Talk to GoGo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm-7-3a1 1 0 1 1 2 0 5 5 0 0 0 10 0 1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-2.08A7 7 0 0 1 5 12Z"/></svg></button>
+  <button id="voiceFab" class="voice-fab" aria-label="Talk to GoGo"><svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm-7-3a1 1 0 1 1 2 0 5 5 0 0 0 10 0 1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-2.08A7 7 0 0 1 5 12Z"/></svg><svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.7 5.3 12 10.6l5.3-5.3 1.4 1.4-5.3 5.3 5.3 5.3-1.4 1.4-5.3-5.3-5.3 5.3-1.4-1.4 5.3-5.3-5.3-5.3z"/></svg></button>
   <p id="assistantStatus" class="sr-only" role="status" aria-live="polite">Ready</p>
   <section id="settingsPanel" class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden><h2 id="settingsTitle">Voice connection</h2><label>Ollama server URL<input id="ollamaServer" inputmode="url" autocomplete="off"></label><p>On a new Wi-Fi network, run <code>ipconfig getifaddr en0</code> on the Mac and enter <code>http://MAC_IP:11434</code>.</p><div><button id="settingsClose">Cancel</button><button id="settingsSave" class="primary">Save</button></div></section>
   <div id="settingsBackdrop" class="assistant-backdrop" hidden></div>
-  <script src="vendor/leaflet/leaflet.js"></script><script type="module" src="app.js"></script>
+  <script src="vendor/leaflet/leaflet.js"></script><script type="module" src="app.js?v=0.10"></script>
 </body>
 </html>

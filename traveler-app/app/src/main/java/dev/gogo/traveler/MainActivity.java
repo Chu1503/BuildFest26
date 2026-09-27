@@ -171,7 +171,9 @@ public class MainActivity extends Activity implements RecognitionListener {
         if (recognizer != null) recognizer.cancel();
         playWakeTone();
         js("window.GoGoWakeDetected&&window.GoGoWakeDetected()");
-        main.postDelayed(() -> { wakeTransition = false; startListening(false); }, 500);
+        // The web voice state machine now decides whether to ask for the starting
+        // location or listen for an active-route command after the wake tone.
+        main.postDelayed(() -> wakeTransition = false, 500);
     }
 
     private void playWakeTone() {
@@ -257,7 +259,7 @@ public class MainActivity extends Activity implements RecognitionListener {
                 connection.setDoOutput(true);
                 connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
 
-                String systemText = "You are GoGo, a concise voice-only indoor accessibility navigation agent. Use only the supplied building context. Never invent a room, floor, elevator, obstacle, or route. Use currentLocation when present and infer mapped room floors from the destination catalog. If a destination or required fact is missing or ambiguous, ask exactly one short question. Navigation actions are validated by the app. Reply with JSON only using: {\"speech\":\"short spoken response\",\"action\":\"none|next|repeat|navigate|ask\",\"destination\":\"exact mapped name or empty\",\"question\":\"one short follow-up question or empty\",\"missingData\":\"specific absent map detail or empty\"}. Building context: " + limit(context, 30000);
+                String systemText = "You are GoGo, a concise voice-only indoor accessibility navigation agent. Use only the supplied building context. Never invent a room, floor, elevator, obstacle, or route. A new route requires a verbally confirmed starting building, floor, and mapped room or place. Infer mapped room floors from the destination catalog. A floor-only destination request must ask which room or place on that floor. If a required fact is missing or ambiguous, ask exactly one short question. Navigation actions are validated by the app. Reply with JSON only using: {\"speech\":\"short spoken response\",\"action\":\"none|next|repeat|navigate|ask\",\"destination\":\"exact mapped name or empty\",\"question\":\"one short follow-up question or empty\",\"missingData\":\"specific absent map detail or empty\"}. Building context: " + limit(context, 30000);
                 JSONArray messages = new JSONArray()
                     .put(new JSONObject().put("role", "system").put("content", systemText))
                     .put(new JSONObject().put("role", "user").put("content", limit(question, 2000)));
