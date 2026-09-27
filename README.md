@@ -37,3 +37,39 @@ Google Maps gets a wheelchair user to a building. It has no idea whether they ca
 ## Acknowledgments
 
 Built for Badger BuildFest 2026. Thanks to the McBurney Center, UW–Madison Campus Facilities, and the mentors who pushed this from a hackathon idea toward something that should actually exist.
+
+## Run the current prototype
+
+```sh
+python -m http.server 8000 --directory building-demo
+```
+
+Open http://localhost:8000. No dependency installation is needed. Leaflet and renderer assets are bundled. Street tiles require internet.
+
+Choose a building, accessibility profile, starting place and destination on the home screen. Start journey opens the 2D map with Follow, floor selection, minimap and step controls. Choose Campus · Library Mall as the start for the outdoor map, then Enter building. Back returns to setup. Position advances manually; location and motion sensors are not collected.
+
+The current demo integrates Morgridge Hall, Memorial Union, College Library, Discovery and Chazen. Bathroom destinations route to nearby mapped approaches, not verified bathroom doors. Emergency exit/assistance displays information, not a validated evacuation route. The capabilities above describe the project vision: live obstacle detection and emergency navigation are not production features of this build. Obstacle simulation remains covered by routing tests.
+
+Morgridge's home card shows an app checklist of four features documented in [UW's accessibility guide](https://kb.wisc.edu/morgridgehall/157777), not an official numeric rating. Other building scores are labeled mock. Floor traces and outdoor routes are approximate demo data; some elevator links are inferred, Chazen's supplied plan is from 2021, and Discovery is conceptual. The prototype is not validated for real-world navigation.
+
+## Android
+
+[Download GoGo 2D 0.4 APK](releases/GoGo-2D-0.4.apk) for Android 8 or later. Package: `dev.gogo.traveler.map2d`, version code 5. It uses the same development signing key as 0.3.1. Signing keys and SDK tools are intentionally excluded from Git.
+
+```sh
+node scripts/sync-android-web.mjs
+python scripts/build-apk.py --tools ../work/android-tools --standalone --output releases/GoGo-2D-0.4.apk
+```
+
+The manual builder expects JDK 17, Android platform 35 and build tools 35.0.0 under the supplied tools path. The standard Gradle Android project is in `traveler-app`. APK signing, alignment, integrity and asset parity passed. Phone installation, native Back gestures and status-bar spacing still need physical-device verification.
+
+## Checks
+
+```sh
+node scripts/test-routes.mjs
+node scripts/test-integration.mjs
+node scripts/test-positioning-2d.mjs
+node scripts/test-amenities.mjs
+```
+
+Checks cover original and imported room routes, step-free bathroom/exit approaches, obstruction rerouting, outdoor routes and all 22 floors. Android assets mirror `building-demo`; rerun the sync script after web changes.

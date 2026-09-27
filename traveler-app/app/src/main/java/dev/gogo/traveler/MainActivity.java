@@ -1,40 +1,39 @@
 package dev.gogo.traveler;
-import android.Manifest;
-import android.app.*;import android.os.*;import android.content.pm.PackageManager;
-import android.location.*;import android.hardware.*;import android.webkit.*;import android.speech.tts.TextToSpeech;import android.view.*;
-import org.json.*;import java.util.*;import java.io.*;
-/** Local UI + native foreground sensors. No location is transmitted or stored. */
-public class MainActivity extends Activity implements LocationListener,SensorEventListener {
- WebView web;LocationManager locations;SensorManager sensors;TextToSpeech tts;boolean speakingReady=false,tracking=false,pageReady=false;
- Location fix;float pressure=Float.NaN,basePressure=Float.NaN,heading=Float.NaN;int headingAccuracy=0;long lastPush=0;Handler timer=new Handler();
- final Runnable heartbeat=new Runnable(){public void run(){if(tracking){push();timer.postDelayed(this,1000);}}};
- @Override public void onCreate(Bundle state){super.onCreate(state);locations=(LocationManager)getSystemService(LOCATION_SERVICE);sensors=(SensorManager)getSystemService(SENSOR_SERVICE);
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Build;
+import android.webkit.*;
+import android.speech.tts.TextToSpeech;
+import android.view.*;
+import android.widget.FrameLayout;
+import java.util.Locale;
+import java.io.*;
+/** Offline map and speech. No location or motion sensor collection. */
+public class MainActivity extends Activity {
+ WebView web;TextToSpeech tts;boolean speakingReady=false,pageReady=false;
+ @Override public void onCreate(Bundle state){super.onCreate(state);
  web=new WebView(this);web.setBackgroundColor(0xfff2f5f5);web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(false);web.getSettings().setAllowContentAccess(false);web.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
  web.addJavascriptInterface(new Bridge(),"GoGoNative");web.setWebViewClient(new WebViewClient(){
-  @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){return true;}
-  @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){String path=r.getUrl().getPath();if(!"appassets.androidplatform.net".equals(r.getUrl().getHost())||path==null||!path.startsWith("/web/")||path.contains(".."))return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0]));try{String mime=path.endsWith(".js")?"text/javascript":path.endsWith(".css")?"text/css":path.endsWith(".png")?"image/png":"text/html";return new WebResourceResponse(mime,"UTF-8",getAssets().open(path.substring(1)));}catch(IOException e){return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0]));}}
-  @Override public void onPageFinished(WebView v,String url){pageReady=true;}
- });setContentView(web);web.setOnApplyWindowInsetsListener((v,i)->{if(Build.VERSION.SDK_INT>=30){android.graphics.Insets b=i.getInsets(WindowInsets.Type.systemBars());v.setPadding(b.left,b.top,b.right,b.bottom);}else v.setPadding(0,i.getSystemWindowInsetTop(),0,i.getSystemWindowInsetBottom());return i;});
- tts=new TextToSpeech(this,status->{speakingReady=status==TextToSpeech.SUCCESS;if(speakingReady){int result=tts.setLanguage(Locale.US);speakingReady=result!=TextToSpeech.LANG_MISSING_DATA&&result!=TextToSpeech.LANG_NOT_SUPPORTED;tts.setSpeechRate(.95f);}});web.loadUrl("https://appassets.androidplatform.net/web/index.html");}
- final class Bridge {
-  @JavascriptInterface public void startLocation(){runOnUiThread(()->{if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},40);}else begin();});}
-  @JavascriptInterface public void resetAltitude(){runOnUiThread(()->{basePressure=pressure;});}
-  @JavascriptInterface public void speak(String text){runOnUiThread(()->{if(speakingReady)tts.speak(text.substring(0,Math.min(text.length(),1000)),TextToSpeech.QUEUE_FLUSH,null,"cue");else android.widget.Toast.makeText(MainActivity.this,"Enable an English voice in Android settings.",android.widget.Toast.LENGTH_LONG).show();});}
-  @JavascriptInterface public void stopSpeech(){runOnUiThread(()->{if(tts!=null)tts.stop();});}
+ @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){return true;}
+ @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){if("https".equals(r.getUrl().getScheme())&&"tile.openstreetmap.org".equals(r.getUrl().getHost()))return null;String path=r.getUrl().getPath();if(!"appassets.androidplatform.net".equals(r.getUrl().getHost())||path==null||!path.startsWith("/web/")||path.contains(".."))return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0]));try{String mime=path.endsWith(".js")?"text/javascript":path.endsWith(".css")?"text/css":path.endsWith(".png")?"image/png":"text/html";return new WebResourceResponse(mime,"UTF-8",getAssets().open(path.substring(1)));}catch(IOException e){return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0]));}}
+ @Override public void onPageFinished(WebView v,String url){pageReady=true;}
+ });
+ // Insets belong to the parent, not WebView padding, including Android 15 edge-to-edge.
+ FrameLayout root=new FrameLayout(this);root.setBackgroundColor(0xfff2f5f5);root.addView(web,new FrameLayout.LayoutParams(-1,-1));
+ if(Build.VERSION.SDK_INT>=30)getWindow().setDecorFitsSystemWindows(false);
+ else getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+ root.setOnApplyWindowInsetsListener((v,i)->{if(Build.VERSION.SDK_INT>=30){android.graphics.Insets b=i.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());v.setPadding(b.left,b.top,b.right,b.bottom);}else v.setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i;});
+ setContentView(root);root.requestApplyInsets();
+ tts=new TextToSpeech(this,status->{speakingReady=status==TextToSpeech.SUCCESS;if(speakingReady){int result=tts.setLanguage(Locale.US);speakingReady=result!=TextToSpeech.LANG_MISSING_DATA&&result!=TextToSpeech.LANG_NOT_SUPPORTED;tts.setSpeechRate(.95f);}});
+ web.loadUrl("https://appassets.androidplatform.net/web/index.html");
  }
- void error(String message){if(pageReady)web.evaluateJavascript("window.GoGoLocationError?.("+JSONObject.quote(message)+")",null);}
- @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){super.onRequestPermissionsResult(r,p,g);if(r==40&&checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED)begin();else error("Precise location denied. Manual source and Next cue remain available.");}
- void begin(){stop();tracking=true;basePressure=Float.NaN;fix=null;try{boolean enabled=false;for(String provider:new String[]{LocationManager.GPS_PROVIDER,LocationManager.NETWORK_PROVIDER})if(locations.isProviderEnabled(provider)){locations.requestLocationUpdates(provider,1000,0,this);enabled=true;}if(!enabled)error("Location services are off. Enable them or use manual guidance.");}catch(SecurityException e){error("Location permission unavailable. Use manual guidance.");}
- for(int type:new int[]{Sensor.TYPE_PRESSURE,Sensor.TYPE_ROTATION_VECTOR}){Sensor sensor=sensors.getDefaultSensor(type);if(sensor!=null)sensors.registerListener(this,sensor,SensorManager.SENSOR_DELAY_UI);}timer.post(heartbeat);}
- void stop(){tracking=false;timer.removeCallbacks(heartbeat);if(locations!=null)locations.removeUpdates(this);if(sensors!=null)sensors.unregisterListener(this);}
- @Override public void onLocationChanged(Location l){long age=(SystemClock.elapsedRealtimeNanos()-l.getElapsedRealtimeNanos())/1000000;if(age<0||age>10000)return;if(fix==null||l.getElapsedRealtimeNanos()>fix.getElapsedRealtimeNanos()+5000000000L||l.getAccuracy()<fix.getAccuracy())fix=l;push();}
- @Override public void onProviderDisabled(String p){push();} @Override public void onProviderEnabled(String p){} @Override public void onStatusChanged(String p,int s,Bundle b){}
- @Override public void onSensorChanged(SensorEvent e){if(e.sensor.getType()==Sensor.TYPE_PRESSURE){pressure=Float.isNaN(pressure)?e.values[0]:pressure*.9f+e.values[0]*.1f;if(Float.isNaN(basePressure))basePressure=pressure;}
- else if(e.sensor.getType()==Sensor.TYPE_ROTATION_VECTOR){float[] r=new float[9],adjusted=new float[9],angles=new float[3];SensorManager.getRotationMatrixFromVector(r,e.values);int rotation=getWindowManager().getDefaultDisplay().getRotation(),x=SensorManager.AXIS_X,y=SensorManager.AXIS_Y;if(rotation==Surface.ROTATION_90){x=SensorManager.AXIS_Y;y=SensorManager.AXIS_MINUS_X;}else if(rotation==Surface.ROTATION_180){x=SensorManager.AXIS_MINUS_X;y=SensorManager.AXIS_MINUS_Y;}else if(rotation==Surface.ROTATION_270){x=SensorManager.AXIS_MINUS_Y;y=SensorManager.AXIS_X;}SensorManager.remapCoordinateSystem(r,x,y,adjusted);SensorManager.getOrientation(adjusted,angles);heading=(float)((Math.toDegrees(angles[0])+360)%360);headingAccuracy=e.accuracy;}
- if(SystemClock.elapsedRealtime()-lastPush>250)push();}
- @Override public void onAccuracyChanged(Sensor s,int accuracy){if(s.getType()==Sensor.TYPE_ROTATION_VECTOR)headingAccuracy=accuracy;}
- void push(){if(!tracking||!pageReady)return;lastPush=SystemClock.elapsedRealtime();try{JSONObject o=new JSONObject();if(fix!=null){o.put("latitude",fix.getLatitude()).put("longitude",fix.getLongitude()).put("accuracy",fix.hasAccuracy()?fix.getAccuracy():JSONObject.NULL).put("ageMs",Math.max(0,(SystemClock.elapsedRealtimeNanos()-fix.getElapsedRealtimeNanos())/1000000)).put("mock",fix.isFromMockProvider());if(fix.hasAltitude())o.put("altitude",fix.getAltitude());if(fix.hasVerticalAccuracy())o.put("verticalAccuracy",fix.getVerticalAccuracyMeters());}if(!Float.isNaN(heading))o.put("heading",heading).put("headingAccuracy",headingAccuracy);o.put("pressureAvailable",sensors.getDefaultSensor(Sensor.TYPE_PRESSURE)!=null);if(!Float.isNaN(pressure)&&!Float.isNaN(basePressure))o.put("relativeAltitude",SensorManager.getAltitude(basePressure,pressure));web.evaluateJavascript("window.GoGoSensors?.("+o.toString()+")",null);}catch(JSONException ignored){}}
+ final class Bridge {
+ @JavascriptInterface public void closeApp(){runOnUiThread(()->finish());}
+ @JavascriptInterface public void speak(String text){runOnUiThread(()->{if(speakingReady)tts.speak(text.substring(0,Math.min(text.length(),1000)),TextToSpeech.QUEUE_FLUSH,null,"cue");else android.widget.Toast.makeText(MainActivity.this,"Enable an English voice in Android settings.",android.widget.Toast.LENGTH_LONG).show();});}
+ @JavascriptInterface public void stopSpeech(){runOnUiThread(()->{if(tts!=null)tts.stop();});}
+ }
+ @Override public void onBackPressed(){if(pageReady)web.evaluateJavascript("typeof window.GoGoBack === 'function' && window.GoGoBack()",handled->{if(!"true".equals(handled))finish();});else finish();}
  @Override protected void onResume(){super.onResume();if(web!=null)web.onResume();}
- @Override protected void onPause(){super.onPause();stop();if(tts!=null)tts.stop();if(web!=null){web.evaluateJavascript("window.GoGoLocationError?.('Tracking paused. Tap Use device location to resume.')",null);web.onPause();}}
- @Override protected void onDestroy(){stop();if(tts!=null)tts.shutdown();if(web!=null){web.removeJavascriptInterface("GoGoNative");web.destroy();}super.onDestroy();}
+ @Override protected void onPause(){super.onPause();if(tts!=null)tts.stop();if(web!=null)web.onPause();}
+ @Override protected void onDestroy(){if(tts!=null)tts.shutdown();if(web!=null){web.removeJavascriptInterface("GoGoNative");web.destroy();}super.onDestroy();}
 }

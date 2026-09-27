@@ -12,3 +12,7 @@ local.properties
 !*.example
 
 *.apk.idsig
+
+# Redundant local source-import staging copies
+building-demo/plans/plans/
+traveler-app/app/src/main/assets/web/plans/plans/

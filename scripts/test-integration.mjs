@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {selectBuilding,activeId,floors,nodes,catalog,edges,setObstacle,edgeBlocked,sourceAllowed} from '../building-demo/active-building.js';
+import {planRoute} from '../building-demo/routing.js';
+import {outdoorRoute,places} from '../building-demo/campus.js';
+let cases=0;
+for(const id of ['union','library','chazen','discovery']){selectBuilding(id);assert(floors.length>=3);for(const room of catalog.filter(c=>c.id.startsWith('room'))){const r=planRoute('entrance',room.id,'wheelchair');assert(r.path.length,`${id} ${room.id}`);for(let i=1;i<r.path.length;i++){const e=edges.find(e=>e.a===r.path[i-1]&&e.b===r.path[i]||e.b===r.path[i-1]&&e.a===r.path[i]);assert(e&&e.type!=='stairs');}cases++;}const target=catalog.find(c=>c.floor===floors.at(-1).id&&c.id.startsWith('room'));const normal=planRoute('entrance',target.id);setObstacle(normal.path);assert(normal.path.length&&normal.path.some((n,i)=>i&&edgeBlocked({a:normal.path[i-1],b:n})));const changed=planRoute('entrance',target.id);for(let i=1;i<changed.path.length;i++)assert(!edgeBlocked({a:changed.path[i-1],b:changed.path[i]}));setObstacle(null);assert.deepEqual(planRoute('entrance',target.id).path,normal.path);}
+selectBuilding('morgridge');assert.equal(catalog.length,128);assert.equal(floors.length,8);assert(planRoute('entrance','space-2-Library').path.length);
+for(const p of places)for(const mode of ['comfort','short']){const r=outdoorRoute(p.id,'wheelchair',mode);assert(r&&r.points.every(p=>p.every(Number.isFinite)));}
+console.log(`${cases} imported room routes, blockage/restore, original catalog restoration and 10 outdoor routes passed.`);
+
+for(const id of ['library','union','chazen','discovery']){selectBuilding(id);for(const f of floors){const n=nodes['e'+f.id];assert(sourceAllowed(f,n.p[0],n.p[2]),id+' elevator spawn');assert(!sourceAllowed(f,10000,10000));}const end=catalog.find(c=>c.floor===floors.at(-1).id&&c.id.startsWith('room'));assert.equal(planRoute('entrance',end.id,'wheelchair','all').path.length,0);if(id==='discovery')assert(planRoute('entrance',end.id,'wheelchair','a').path.length);else assert.equal(planRoute('entrance',end.id,'wheelchair','a').path.length,0);}selectBuilding('morgridge');console.log('Elevator spawns, outer boundaries, and outage policies passed.');

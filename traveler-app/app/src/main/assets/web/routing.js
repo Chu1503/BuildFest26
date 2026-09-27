@@ -1,12 +1,10 @@
-import {nodes,edges} from './building.js';
-import {additions,catalog} from './catalog-data.js';
-Object.assign(nodes,additions.nodes);edges.splice(0,edges.length,...additions.edges);
+import {nodes,edges,catalog,edgeBlocked} from './active-building.js';
 export {nodes,edges,catalog};
-export function planRoute(start,end,profile='wheelchair',incident='normal'){
+export function planRoute(start,end,profile='wheelchair',incident='normal',options={}){
  if(!nodes[start]||!nodes[end])return {path:[],reason:'unmapped'};
  if(incident==='lost')return {path:[],reason:'location'};
  const d={[start]:0},prev={},done=new Set(),queue=[[0,start]],adj={};
- for(const e of edges){if(e.type==='stairs'&&!['walking','deaf'].includes(profile))continue;if(e.type==='elevatorA'&&['a','all'].includes(incident))continue;if(e.type==='elevatorB'&&incident==='all')continue;for(const [a,b]of [[e.a,e.b],[e.b,e.a]])(adj[a]??=[]).push([b,e.d+(e.type.startsWith('elevator')?5:0)]);}
+ for(const e of edges){if(edgeBlocked(e))continue;if(profile==='wheelchair'&&((e.slope||0)>8||(e.width||2)<.9))continue;if(e.type==='stairs'&&(options.avoidStairs??!['walking','deaf'].includes(profile)))continue;if(e.type==='elevatorA'&&['a','all'].includes(incident))continue;if(e.type==='elevatorB'&&incident==='all')continue;for(const [a,b]of [[e.a,e.b],[e.b,e.a]])(adj[a]??=[]).push([b,e.d+(e.type.startsWith('elevator')?5:0)+(options.mode==='short'?0:(e.slope||0)*30+(profile==='blind'&&e.tactile===false?25:0))]);}
  while(queue.length){queue.sort((a,b)=>b[0]-a[0]);let [cost,u]=queue.pop();if(done.has(u))continue;done.add(u);if(u===end)break;for(const [v,w]of adj[u]||[])if(cost+w<(d[v]??Infinity)){d[v]=cost+w;prev[v]=u;queue.push([d[v],v]);}}
  if(d[end]===undefined)return {path:[],reason:'blocked'};let path=[end];while(path[0]!==start)path.unshift(prev[path[0]]);return {path,distance:d[end]};
 }
