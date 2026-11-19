@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080808">
   <title>GoGo</title>
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=0.13">
+  <link rel="stylesheet" href="style.css?v=0.15">
 </head>
 <body>
   <header>
@@ -48,7 +48,17 @@
     <section id="journey" class="experience" hidden>
       <select id="floorSelect" aria-label="View floor" hidden></select>
       <div id="campusJourney" hidden><div id="outdoorMap" aria-label="Interactive campus map"></div><p id="tileStatus" class="status" hidden></p></div>
-      <div id="scene"></div>
+      <div id="scene">
+        <div id="scene2d" class="scene-layer"></div>
+        <div id="scene3d" class="scene-layer" hidden>
+          <div id="map3dControls" class="map3d-controls" hidden><button id="allFloors3d" aria-pressed="false">All floors</button><button id="zoom3dIn" aria-label="Zoom in 3D map">+</button><button id="zoom3dOut" aria-label="Zoom out 3D map">−</button></div>
+          <div id="povControls" class="map3d-controls" hidden><button id="faceRoute" aria-label="Turn to face the next step">Face route</button></div>
+        </div>
+        <div id="mapViews" class="map-views" role="group" aria-label="Map view">
+          <button data-view="2d" aria-pressed="true">2D</button><button data-view="3d" aria-pressed="false">3D</button><button data-view="pov" aria-pressed="false" aria-label="First-person 3D view">POV</button>
+        </div>
+        <p id="mapNote" class="map-note" role="status" aria-live="polite" hidden></p>
+      </div>
       <div class="guidance" role="status" aria-live="polite">
         <p id="cueMeta" hidden></p>
         <h2 id="instruction"></h2>
@@ -68,6 +78,6 @@
     <div><button id="settingsClose">Cancel</button><button id="settingsSave" class="primary">Save</button></div>
   </section>
   <div id="settingsBackdrop" class="assistant-backdrop" hidden></div>
-  <script src="vendor/leaflet/leaflet.js"></script><script type="module" src="app.js?v=0.14"></script>
+  <script src="vendor/leaflet/leaflet.js"></script><script type="module" src="app.js?v=0.16"></script>
 </body>
 </html>

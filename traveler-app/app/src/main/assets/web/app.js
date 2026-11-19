@@ -1,14 +1,66 @@
 import {planRoute,cueFor,nodes,catalog} from './routing.js';
 import {floors,selectBuilding,activeId,model} from './active-building.js';
 import {places,outdoorRoute} from './campus.js';
-import {BuildingViewer} from './viewer-2d.js';
+import {BuildingViewer as Viewer2D} from './viewer-2d.js';
 import {amenities,refreshAmenities,accessibility} from './amenities.js';
 import {bestCatalogMatch,cleanSpeech as clean,floorFromSpeech,floorOnlyRequest} from './voice-parse.js';
 const $=id=>document.getElementById(id);
 document.documentElement.classList.add('map2d');
-let viewer,path=[],index=0,screen='home',outdoorStage=false,campusMap,routeLayer;
+let path=[],index=0,screen='home',outdoorStage=false,campusMap,routeLayer;
+// Map views: '2d' (flat canvas, default), '3d' (orbiting building model) and 'pov' (first person).
+// The Three.js viewer is imported only when a 3D view is first chosen, so startup is unchanged,
+// and any WebGL failure falls back to the 2D map.
+const MAP_VIEWS=['2d','3d','pov'];
+let viewer2d=null,viewer3d=null,loading3d=null,failed3d=false,mapView='2d',noteTimer=0,showAll3d=false;
+const headingTo=(a,b)=>a&&b&&Math.hypot(b.p[0]-a.p[0],b.p[2]-a.p[2])>.01?Math.atan2(-(b.p[0]-a.p[0]),-(b.p[2]-a.p[2])):null;
+function faceRoute(){if(!viewer3d||!path.length)return;const yaw=headingTo(nodes[path[index]],nodes[path[index+1]])??headingTo(nodes[path[index-1]],nodes[path[index]]);if(yaw!==null)viewer3d.turnTo(yaw);}
+function setShowAll3d(all){showAll3d=all;$('allFloors3d').setAttribute('aria-pressed',String(all));if(!viewer3d)return;viewer3d.setShowAll(all);const n=nodes[path[index]];viewer3d.view=all?'all':String(n?.floor??viewer3d.floor);viewer3d.updateVisibility();}
+try{const saved=localStorage.getItem('gogo-map-view');if(MAP_VIEWS.includes(saved))mapView=saved;}catch{}
+const activeViewer=()=>mapView!=='2d'&&viewer3d?viewer3d:viewer2d;
+function ensure2D(){if(!viewer2d)viewer2d=new Viewer2D($('scene2d'),()=>{},()=>{});return viewer2d;}
+function mapNote(text,ms=0){clearTimeout(noteTimer);$('mapNote').textContent=text||'';$('mapNote').hidden=!text;if(text&&ms)noteTimer=setTimeout(()=>{$('mapNote').hidden=true;},ms);}
+function syncMapButtons(){for(const b of document.querySelectorAll('#mapViews button')){const view=b.dataset.view;b.setAttribute('aria-pressed',String(view===mapView));if(view!=='2d')b.disabled=failed3d;}}
+function bindPinch(v){
+ const layer=$('scene3d'),points=new Map();let span=0;
+ layer.addEventListener('pointerdown',e=>{points.set(e.pointerId,[e.clientX,e.clientY]);span=0;},true);
+ layer.addEventListener('pointermove',e=>{if(!points.has(e.pointerId))return;points.set(e.pointerId,[e.clientX,e.clientY]);if(points.size<2)return;e.stopPropagation();if(v.mode!=='overview')return;const [a,b]=[...points.values()],next=Math.hypot(a[0]-b[0],a[1]-b[1]);if(span&&next)v.zoom=Math.max(.5,Math.min(1.8,v.zoom*span/next));span=next;},true);
+ const end=e=>{points.delete(e.pointerId);span=0;};layer.addEventListener('pointerup',end,true);layer.addEventListener('pointercancel',end,true);
+}
+function fail3D(error){
+ if(error)console.error(error);
+ failed3d=true;loading3d=null;viewer3d=null;$('scene3d').hidden=true;
+ mapNote('3D view is not available on this device. Showing the 2D map.',4000);
+ mapView='2d';syncMapButtons();applyMapView();
+}
+function load3D(){
+ if(viewer3d)return Promise.resolve(viewer3d);
+ if(failed3d)return Promise.reject(Error('3D unavailable'));
+ return loading3d??=import('./viewer-3d-mobile.js').then(({MobileBuildingViewer})=>{
+  const v=new MobileBuildingViewer($('scene3d'),()=>{},()=>{});
+  v.setShowAll(showAll3d);
+  v.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+  v.renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();if(viewer3d===v)fail3D();});
+  bindPinch(v);viewer3d=v;return v;
+ }).catch(error=>{fail3D(error);throw error;});
+}
+function applyMapView(){
+ const use3d=mapView!=='2d'&&!!viewer3d;
+ $('scene2d').hidden=use3d;$('scene3d').hidden=!use3d;$('map3dControls').hidden=!(use3d&&mapView==='3d');$('povControls').hidden=!(use3d&&mapView==='pov');
+ if(use3d)viewer3d.setMode(mapView==='pov'?'pov':'overview');else ensure2D().setMode('pov');
+ if(screen==='journey'&&!outdoorStage&&path.length)renderCue(false);
+ requestAnimationFrame(()=>activeViewer()?.resize());
+}
+function setMapView(view,save=true){
+ if(!MAP_VIEWS.includes(view))return;
+ if(view!=='2d'&&failed3d)view='2d';
+ mapView=view;if(save)try{localStorage.setItem('gogo-map-view',view);}catch{}
+ syncMapButtons();
+ if(view==='2d'||viewer3d){mapNote('');applyMapView();return;}
+ applyMapView();mapNote('Loading 3D view…');
+ load3D().then(()=>{mapNote('');if(mapView===view)applyMapView();}).catch(()=>{});
+}
 function showOutdoor(){const r=outdoorRoute(activeId,$('profile').value,'comfort');if(!campusMap){campusMap=L.map('outdoorMap');L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).on('tileerror',()=>{$('tileStatus').hidden=false;}).addTo(campusMap);for(const p of places)L.circleMarker([p.lat,p.lng],{radius:8,color:'#173f4c',fillColor:'#72b9ac',fillOpacity:1}).addTo(campusMap).bindTooltip(p.name);L.circleMarker([43.0753,-89.3987],{radius:7,color:'#2779c4'}).addTo(campusMap).bindTooltip('Library Mall · starting point');}if(routeLayer)routeLayer.remove();routeLayer=L.polyline(r.points,{color:'#287d69',weight:6}).addTo(campusMap);requestAnimationFrame(()=>{campusMap.invalidateSize();campusMap.fitBounds(routeLayer.getBounds(),{padding:[35,35],maxZoom:17});});$('cueMeta').textContent='CAMPUS · DEMO ROUTE';$('instruction').textContent='Head to '+places.find(p=>p.id===activeId).name;$('detail').textContent=`Library Mall · approximately ${r.meters} m. Seeded accessibility-first route; follow local signs and conditions.`;$('next').textContent='Enter building';$('next').disabled=false;}
-function stage(){ $('campusJourney').hidden=!outdoorStage;$('scene').hidden=outdoorStage;$('floorSelect').hidden=outdoorStage;if(outdoorStage)showOutdoor();else{if(!viewer)viewer=new BuildingViewer($('scene'),()=>{},()=>{});viewer.setMode('pov');renderCue();requestAnimationFrame(()=>viewer.resize());$('next').textContent='Next step';}}
+function stage(){ $('campusJourney').hidden=!outdoorStage;$('scene').hidden=outdoorStage;$('floorSelect').hidden=outdoorStage;if(outdoorStage)showOutdoor();else{ensure2D();setMapView(mapView,false);$('next').textContent='Next step';}}
 const floorName=f=>floors.find(x=>x.id===f)?.name||`Floor ${f}`;
 const options=(el,items,value)=>{el.replaceChildren(...items.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;return o;}));if(items.some(x=>String(x.id)===String(value)))el.value=value;};
 function destinations(){return [...catalog.filter(c=>c.routable),...amenities.filter(c=>c.routable)];}
@@ -22,12 +74,20 @@ function showHome(){screen='home';stopSpeech();$('planner').hidden=false;$('jour
 window.GoGoBack=()=>{if(screen==='journey'){showHome();return true;}return false;};
 $('back').onclick=()=>{if(!window.GoGoBack()&&window.GoGoNative)window.GoGoNative.closeApp();};
 function plan(){stopSpeech();index=0;const from=$('journeyType').value==='outdoor'?'entrance':$('source').value,to=amenities.find(a=>a.id===$('destination').value)?.routeId||$('destination').value;path=(!from||!to)?[]:planRoute(from,to,$('profile').value,'normal',{avoidStairs:$('stepfree').checked,mode:'comfort'}).path;$('start').disabled=!path.length;$('formStatus').textContent=path.length?'':destKind()==='bathroom'?'No bathroom mapped on this floor.':'No step-free route to that place. Try another floor.';}
-function changeBuilding(){path=[];index=0;selectBuilding($('buildingChoice').value);refreshAmenities();viewer?.loadBuilding();for(const id of ['sourceFloor','destFloor','floorSelect'])options($(id),floors.map(f=>({id:f.id,name:f.name})));const d=catalog.find(c=>c.id===(model()?.defaultRoom||'space-2-Library')&&c.routable)||catalog.find(c=>c.routable);$('sourceFloor').value=nodes.entrance.floor;$('destFloor').value=d.floor;$('destinationType').value='rooms';syncDestinationField();populate('source',nodes.entrance.floor,'entrance');populate('destination',d.floor,d.id);$('accessibilityScore').textContent=accessibility(activeId).score;plan();}
-function renderCue(){const n=nodes[path[index]],c=cueFor(path,index,$('profile').value);$('cueMeta').textContent=`${floorName(n.floor)} · ${index+1} / ${path.length}`;$('instruction').textContent=c.text;const amenity=amenities.find(a=>a.id===$('destination').value);if(amenity&&index===path.length-1)$('instruction').textContent='Arrived.';$('next').disabled=index===path.length-1;viewer.setPosition(n.p);viewer.setRoute(path);if(path[index+1])viewer.setHeading(n.p,nodes[path[index+1]].p);$('floorSelect').value=n.floor;}
+function changeBuilding(){path=[];index=0;selectBuilding($('buildingChoice').value);refreshAmenities();viewer2d?.loadBuilding();if(viewer3d){viewer3d.loadBuilding();viewer3d.setMode(mapView==='pov'?'pov':'overview');}for(const id of ['sourceFloor','destFloor','floorSelect'])options($(id),floors.map(f=>({id:f.id,name:f.name})));const d=catalog.find(c=>c.id===(model()?.defaultRoom||'space-2-Library')&&c.routable)||catalog.find(c=>c.routable);$('sourceFloor').value=nodes.entrance.floor;$('destFloor').value=d.floor;$('destinationType').value='rooms';syncDestinationField();populate('source',nodes.entrance.floor,'entrance');populate('destination',d.floor,d.id);$('accessibilityScore').textContent=accessibility(activeId).score;plan();}
+function renderCue(animate=true){const n=nodes[path[index]],c=cueFor(path,index,$('profile').value);$('cueMeta').textContent=`${floorName(n.floor)} · ${index+1} / ${path.length}`;$('instruction').textContent=c.text;const amenity=amenities.find(a=>a.id===$('destination').value);if(amenity&&index===path.length-1)$('instruction').textContent='Arrived.';$('next').disabled=index===path.length-1;const viewer=activeViewer();if(!viewer)return;
+ if(viewer===viewer3d){if(viewer.path!==path)viewer.setRoute(path);const yaw=headingTo(n,nodes[path[index+1]]);if(animate&&mapView==='pov')viewer.glideTo(n.p,yaw);else{viewer.setPosition(n.p);if(yaw!==null&&viewer.mode==='pov')viewer.yaw=yaw;}viewer.view=showAll3d&&mapView==='3d'?'all':String(n.floor);viewer.updateVisibility();}
+ else{viewer.setPosition(n.p);if(viewer.path!==path)viewer.setRoute(path);if(path[index+1])viewer.setHeading(n.p,nodes[path[index+1]].p);}$('floorSelect').value=n.floor;}
 $('start').onclick=()=>{plan();if(!path.length)return;screen='journey';$('planner').hidden=true;$('journey').hidden=false;document.body.classList.add('navigation');outdoorStage=$('journeyType').value==='outdoor';stage();window.scrollTo(0,0);if(!outdoorStage)speak();};
-$('floorSelect').onchange=()=>{viewer.view=$('floorSelect').value;viewer.follow=false;viewer.pan=[0,0];viewer.zoom=1;};
+$('floorSelect').onchange=()=>{const viewer=viewer2d;if(!viewer)return;viewer.view=$('floorSelect').value;viewer.follow=false;viewer.pan=[0,0];viewer.zoom=1;};
 $('next').onclick=()=>{if(outdoorStage){outdoorStage=false;stage();speak();return;}if(index+1<path.length){index++;renderCue();speak();}};
 $('repeat').onclick=()=>{if(!outdoorStage)speak();};
+for(const button of document.querySelectorAll('#mapViews button'))button.onclick=()=>setMapView(button.dataset.view);
+$('zoom3dIn').onclick=()=>{if(viewer3d)viewer3d.zoom=Math.max(.5,viewer3d.zoom/1.25);};
+$('zoom3dOut').onclick=()=>{if(viewer3d)viewer3d.zoom=Math.min(1.8,viewer3d.zoom*1.25);};
+$('allFloors3d').onclick=()=>setShowAll3d(!showAll3d);
+$('faceRoute').onclick=faceRoute;
+syncMapButtons();
 $('journeyType').onchange=()=>{$('indoorSource').hidden=$('journeyType').value==='outdoor';plan();};
 $('buildingChoice').onchange=changeBuilding;
 $('sourceFloor').onchange=()=>{populate('source',$('sourceFloor').value,'e'+$('sourceFloor').value);plan();};
@@ -39,7 +99,7 @@ $('voice').onchange=()=>{if(!$('voice').checked)stopSpeech();};
 options($('buildingChoice'),places.map(p=>({id:p.id,name:p.name})), 'morgridge');
 try{const saved=localStorage.getItem('gogo-profile');if([...$('profile').options].some(o=>o.value===saved))$('profile').value=saved;}catch{}
 changeBuilding();$('profile').onchange();showHome();
-let last=0;function frame(t){if(screen==='journey'&&!outdoorStage)viewer?.tick(Math.min(.1,(t-last)/1000||0));last=t;requestAnimationFrame(frame);}requestAnimationFrame(frame);
+let last=0;function frame(t){if(screen==='journey'&&!outdoorStage)activeViewer()?.tick(Math.min(.1,(t-last)/1000||0),$('profile').value);last=t;requestAnimationFrame(frame);}requestAnimationFrame(frame);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSpeech();});
 
 // Voice assistant: local navigation commands stay deterministic; Ollama only interprets
