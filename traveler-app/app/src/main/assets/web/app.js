@@ -1,19 +1,21 @@
 import {planRoute,cueFor,nodes,catalog} from './routing.js';
 import {floors,selectBuilding,activeId,model} from './active-building.js';
 import {places,outdoorRoute} from './campus.js';
-import {BuildingViewer as Viewer2D} from './viewer-2d.js';
+import {BuildingViewer as Viewer2D} from './viewer-2d.js?v=0.15';
 import {amenities,refreshAmenities,accessibility} from './amenities.js';
 import {bestCatalogMatch,cleanSpeech as clean,floorFromSpeech,floorOnlyRequest} from './voice-parse.js';
+import {createSearch} from './place-search.js';
+import {destinationItems,sourceItems,routeSteps,stepGuide,headingAhead,maneuverSvg,maneuverKind,formatDistance,arrivalTime} from './nav-guide.js';
 const $=id=>document.getElementById(id);
 document.documentElement.classList.add('map2d');
-let path=[],index=0,screen='home',outdoorStage=false,campusMap,routeLayer;
+let path=[],steps=[],step=0,shownIndex=null,lastKind='',index=0,screen='home',outdoorStage=false,campusMap,routeLayer;
 // Map views: '2d' (flat canvas, default), '3d' (orbiting building model) and 'pov' (first person).
 // The Three.js viewer is imported only when a 3D view is first chosen, so startup is unchanged,
 // and any WebGL failure falls back to the 2D map.
 const MAP_VIEWS=['2d','3d','pov'];
 let viewer2d=null,viewer3d=null,loading3d=null,failed3d=false,mapView='2d',noteTimer=0,showAll3d=false;
-const headingTo=(a,b)=>a&&b&&Math.hypot(b.p[0]-a.p[0],b.p[2]-a.p[2])>.01?Math.atan2(-(b.p[0]-a.p[0]),-(b.p[2]-a.p[2])):null;
-function faceRoute(){if(!viewer3d||!path.length)return;const yaw=headingTo(nodes[path[index]],nodes[path[index+1]])??headingTo(nodes[path[index-1]],nodes[path[index]]);if(yaw!==null)viewer3d.turnTo(yaw);}
+const headingAt=i=>headingAhead(path,i)??(i>0?headingAhead(path,i-1):null);
+function faceRoute(){if(!viewer3d||!path.length)return;const yaw=headingAt(index);if(yaw!==null){viewer3d.pitch=viewer3d.povPitch;viewer3d.turnTo(yaw);}}
 function setShowAll3d(all){showAll3d=all;$('allFloors3d').setAttribute('aria-pressed',String(all));if(!viewer3d)return;viewer3d.setShowAll(all);const n=nodes[path[index]];viewer3d.view=all?'all':String(n?.floor??viewer3d.floor);viewer3d.updateVisibility();}
 try{const saved=localStorage.getItem('gogo-map-view');if(MAP_VIEWS.includes(saved))mapView=saved;}catch{}
 const activeViewer=()=>mapView!=='2d'&&viewer3d?viewer3d:viewer2d;
@@ -68,19 +70,78 @@ const destKind=()=>$('destinationType').value==='emergency'?'exit':$('destinatio
 const cleanName=name=>name.replace(/\s*·\s*(?:mapped )?approach$/i,'');
 const syncDestinationField=()=>$('destinationField').hidden=$('destinationType').value!=='rooms';
 function populate(id,f,preferred){let list=(id==='source'?catalog.filter(c=>c.routable):destinations()).filter(c=>c.floor===Number(f));if(id==='destination')list=$('destinationType').value==='rooms'?list.filter(c=>!c.kind):list.filter(c=>c.kind===destKind());options($(id),list.map(c=>({...c,name:cleanName(c.name)})),preferred);}
+
+// ---- Search fields, quick picks and route preview (same look as the website) ----
+let destItems=[],srcItems=[];
+const buildingItems=places.map(p=>({id:p.id,title:p.name,subtitle:p.category||'Research & teaching',badge:p.score?String(p.score):'',kind:'building',keywords:p.details?.join(' ')||''}));
+const buildingSearch=createSearch($('buildingSearch'),{items:()=>buildingItems,onPick:item=>{if(item.id!==$('buildingChoice').value){$('buildingChoice').value=item.id;changeBuilding();}},emptyText:'No mapped building with that name yet'});
+const fromSearch=createSearch($('fromSearch'),{items:()=>srcItems,recentKey:()=>'gogo-recent-from-'+activeId,suggestions:()=>['entrance',...srcItems.filter(i=>i.kind==='entrance'&&i.id!=='entrance').map(i=>i.id),...srcItems.filter(i=>i.kind==='elevator').map(i=>i.id)],onPick:pickSource});
+const toSearch=createSearch($('toSearch'),{items:()=>destItems,recentKey:()=>'gogo-recent-to-'+activeId,suggestions:()=>[...destItems.filter(i=>i.kind==='bathroom').slice(0,2),...destItems.filter(i=>i.kind==='exit').slice(0,1),...destItems.filter(i=>i.kind==='room').slice(0,5)].map(i=>i.id),onPick:pickDestination});
+function refreshItems(){destItems=destinationItems();srcItems=sourceItems();fromSearch.refresh();toSearch.refresh();}
+function pickSource(item){$('sourceFloor').value=item.floor;populate('source',item.floor,item.id);plan();}
+function pickDestination(item){$('destinationType').value=item.kind==='bathroom'?'bathroom':item.kind==='exit'?'exit':'rooms';syncDestinationField();$('destFloor').value=item.floor;populate('destination',item.floor,item.id);plan();}
+function syncSearches(){fromSearch.set(srcItems.find(i=>i.id===$('source').value));toSearch.set(destItems.find(i=>i.id===$('destination').value));buildingSearch.set(buildingItems.find(i=>i.id===$('buildingChoice').value));for(const chip of document.querySelectorAll('#quickChips .chip'))chip.setAttribute('aria-pressed','false');}
+function nearestOf(kind){const from=$('source').value;let best=null;for(const item of destItems.filter(i=>i.kind===kind)){const target=amenities.find(a=>a.id===item.id)?.routeId||item.id,r=planRoute(from,target,$('profile').value,'normal',{avoidStairs:true,mode:'comfort'});if(r.path.length&&(!best||r.distance<best.distance))best={item,distance:r.distance};}return best?.item;}
+for(const chip of document.querySelectorAll('#quickChips .chip'))chip.onclick=()=>{const item=nearestOf(chip.dataset.quick);if(!item){showPreview(chip.dataset.quick==='bathroom'?'No restroom is mapped in this building yet.':'Nothing like that is mapped here yet.',true);return;}pickDestination(item);chip.setAttribute('aria-pressed','true');};
+$('swap').onclick=()=>{const dest=destItems.find(i=>i.id===$('destination').value),src=srcItems.find(i=>i.id===$('source').value);if(!dest||!src)return;const amenity=amenities.find(a=>a.id===dest.id),newSource=srcItems.find(i=>i.id===(amenity?.routeId||dest.id)),newDest=destItems.find(i=>i.id===src.id)||destItems.find(i=>i.kind==='exit'&&amenities.find(a=>a.id===i.id)?.routeId===src.id);if(!newSource||!newDest)return;$('sourceFloor').value=newSource.floor;populate('source',newSource.floor,newSource.id);pickDestination(newDest);};
+for(const button of document.querySelectorAll('#profileButtons button'))button.onclick=()=>{$('profile').value=button.dataset.profile;$('profile').onchange();};
+function syncProfileButtons(){for(const button of document.querySelectorAll('#profileButtons button'))button.setAttribute('aria-pressed',String(button.dataset.profile===$('profile').value));}
+function showPreview(text,error=false){const el=$('routePreview');el.classList.toggle('error',error);el.textContent=text;}
+function renderPreview(){
+ const note=$('placeNote');
+ if(!path.length){showPreview(destKind()==='bathroom'?'No restroom is mapped on this floor.':'No step-free route to that place yet. Try another destination.',true);note.hidden=true;return;}
+ const g=stepGuide(path,steps,0,$('profile').value),floorsUsed=new Set(path.map(id=>nodes[id].floor)).size,el=$('routePreview');el.classList.remove('error');
+ el.innerHTML=`<strong>${g.minutes} min</strong><span class="dot"></span>${formatDistance(g.total)}<span class="dot"></span>${floorsUsed>1?`${floorsUsed} floors · elevator`:'Same floor'}`;
+ const amenity=amenities.find(a=>a.id===$('destination').value);
+ const text=amenity?.kind==='exit'?'This is a mapped building entrance, not a verified emergency evacuation route. In an emergency, follow posted signs and staff directions.':amenity?.kind==='bathroom'?'The route ends at the closest mapped point to the restrooms. Follow signs for the last few metres.':'';
+ note.hidden=!text;note.querySelector('span').textContent=text;
+}
+function scoreFacts(){
+ const count=kind=>destItems.filter(i=>i.kind===kind).length,plural=(n,one,many)=>`${n} ${n===1?one:many}`;
+ const facts=[plural(floors.length,'floor mapped','floors mapped'),plural(count('room'),'room or place','rooms and places'),plural(count('elevator'),'elevator lobby','elevator lobbies'),plural(count('bathroom'),'restroom area','restroom areas'),plural(count('exit'),'step-free entrance','step-free entrances')];
+ $('scoreFacts').replaceChildren(...facts.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
+ const [value]=accessibility(activeId).score.split(' / ');$('accessibilityScore').innerHTML=`${value}<small> / 100</small>`;
+}
 function stopSpeech(){if(window.GoGoNative)window.GoGoNative.stopSpeech();else window.speechSynthesis?.cancel();}
-function speak(){if(!$('voice').checked||$('profile').value==='deaf'||!path.length)return;const c=cueFor(path,index,$('profile').value);if(window.GoGoNative)window.GoGoNative.speak(c.text);else if(window.speechSynthesis){stopSpeech();speechSynthesis.speak(new SpeechSynthesisUtterance(c.text));}}
+function speak(){if(!$('voice').checked||$('profile').value==='deaf'||!path.length)return;const text=$('instruction').textContent;if(window.GoGoNative)window.GoGoNative.speak(text);else if(window.speechSynthesis){stopSpeech();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
 function showHome(){screen='home';stopSpeech();$('planner').hidden=false;$('journey').hidden=true;document.body.classList.remove('navigation');window.scrollTo(0,0);}
 window.GoGoBack=()=>{if(screen==='journey'){showHome();return true;}return false;};
 $('back').onclick=()=>{if(!window.GoGoBack()&&window.GoGoNative)window.GoGoNative.closeApp();};
-function plan(){stopSpeech();index=0;const from=$('journeyType').value==='outdoor'?'entrance':$('source').value,to=amenities.find(a=>a.id===$('destination').value)?.routeId||$('destination').value;path=(!from||!to)?[]:planRoute(from,to,$('profile').value,'normal',{avoidStairs:$('stepfree').checked,mode:'comfort'}).path;$('start').disabled=!path.length;$('formStatus').textContent=path.length?'':destKind()==='bathroom'?'No bathroom mapped on this floor.':'No step-free route to that place. Try another floor.';}
-function changeBuilding(){path=[];index=0;selectBuilding($('buildingChoice').value);refreshAmenities();viewer2d?.loadBuilding();if(viewer3d){viewer3d.loadBuilding();viewer3d.setMode(mapView==='pov'?'pov':'overview');}for(const id of ['sourceFloor','destFloor','floorSelect'])options($(id),floors.map(f=>({id:f.id,name:f.name})));const d=catalog.find(c=>c.id===(model()?.defaultRoom||'space-2-Library')&&c.routable)||catalog.find(c=>c.routable);$('sourceFloor').value=nodes.entrance.floor;$('destFloor').value=d.floor;$('destinationType').value='rooms';syncDestinationField();populate('source',nodes.entrance.floor,'entrance');populate('destination',d.floor,d.id);$('accessibilityScore').textContent=accessibility(activeId).score;plan();}
-function renderCue(animate=true){const n=nodes[path[index]],c=cueFor(path,index,$('profile').value);$('cueMeta').textContent=`${floorName(n.floor)} · ${index+1} / ${path.length}`;$('instruction').textContent=c.text;const amenity=amenities.find(a=>a.id===$('destination').value);if(amenity&&index===path.length-1)$('instruction').textContent='Arrived.';$('next').disabled=index===path.length-1;const viewer=activeViewer();if(!viewer)return;
- if(viewer===viewer3d){if(viewer.path!==path)viewer.setRoute(path);const yaw=headingTo(n,nodes[path[index+1]]);if(animate&&mapView==='pov')viewer.glideTo(n.p,yaw);else{viewer.setPosition(n.p);if(yaw!==null&&viewer.mode==='pov')viewer.yaw=yaw;}viewer.view=showAll3d&&mapView==='3d'?'all':String(n.floor);viewer.updateVisibility();}
- else{viewer.setPosition(n.p);if(viewer.path!==path)viewer.setRoute(path);if(path[index+1])viewer.setHeading(n.p,nodes[path[index+1]].p);}$('floorSelect').value=n.floor;}
-$('start').onclick=()=>{plan();if(!path.length)return;screen='journey';$('planner').hidden=true;$('journey').hidden=false;document.body.classList.add('navigation');outdoorStage=$('journeyType').value==='outdoor';stage();window.scrollTo(0,0);if(!outdoorStage)speak();};
+function plan(){stopSpeech();index=0;const from=$('journeyType').value==='outdoor'?'entrance':$('source').value,to=amenities.find(a=>a.id===$('destination').value)?.routeId||$('destination').value;path=(!from||!to)?[]:planRoute(from,to,$('profile').value,'normal',{avoidStairs:$('stepfree').checked,mode:'comfort'}).path;steps=routeSteps(path,$('profile').value);step=0;shownIndex=null;$('start').disabled=!path.length;syncSearches();renderPreview();$('formStatus').textContent=path.length?'':destKind()==='bathroom'?'No bathroom mapped on this floor.':'No step-free route to that place. Try another floor.';}
+function changeBuilding(){path=[];index=0;selectBuilding($('buildingChoice').value);refreshAmenities();refreshItems();viewer2d?.loadBuilding();if(viewer3d){viewer3d.loadBuilding();viewer3d.setMode(mapView==='pov'?'pov':'overview');}for(const id of ['sourceFloor','destFloor','floorSelect'])options($(id),floors.map(f=>({id:f.id,name:f.name})));const d=catalog.find(c=>c.id===(model()?.defaultRoom||'space-2-Library')&&c.routable)||catalog.find(c=>c.routable);$('sourceFloor').value=nodes.entrance.floor;$('destFloor').value=d.floor;$('destinationType').value='rooms';syncDestinationField();populate('source',nodes.entrance.floor,'entrance');populate('destination',d.floor,d.id);scoreFacts();plan();}
+const destinationTitle=()=>destItems.find(i=>i.id===$('destination').value)?.title||'';
+function renderCue(animate=true){
+ index=steps[step]?.i??0;
+ const n=nodes[path[index]],g=stepGuide(path,steps,step,$('profile').value,destinationTitle());
+ $('cueMeta').textContent=`${floorName(n.floor)} · ${step+1} / ${steps.length}`;
+ $('instruction').textContent=g.text;
+ $('navDistance').textContent=g.arrived?floorName(n.floor):`${floorName(n.floor)} · step ${step+1} of ${steps.length-1}`;
+ $('navIcon').innerHTML=maneuverSvg(g.kind);
+ const banner=$('navBanner');banner.classList.toggle('arrived',g.arrived);
+ if(lastKind!==g.kind+step){banner.classList.remove('changed');void banner.offsetWidth;banner.classList.add('changed');lastKind=g.kind+step;}
+ $('navThen').hidden=!g.next;if(g.next){$('navThenIcon').innerHTML=maneuverSvg(maneuverKind(g.next));$('navThenText').textContent=g.leg>=1?`In ${formatDistance(g.leg)}, ${g.next[0].toLowerCase()+g.next.slice(1)}`:g.next;}
+ $('tripEta').textContent=g.arrived?'Arrived':`${g.minutes} min`;
+ $('tripMeta').textContent=g.arrived?'':`${formatDistance(g.meters)} · arrive ${arrivalTime(g.seconds)}`;
+ $('tripBar').style.width=`${Math.round(g.progress*100)}%`;
+ $('tripDest').textContent=destinationTitle();$('tripFloor').textContent=floorName(nodes[path.at(-1)].floor);
+ $('next').disabled=false;$('next').textContent=g.arrived?'Finish':'Next step';$('prev').disabled=step===0;
+ const from=shownIndex;shownIndex=index;
+ const viewer=activeViewer();if(!viewer)return;
+ const yaw=headingAt(index);
+ if(viewer===viewer3d){
+  if(viewer.path!==path)viewer.setRoute(path);viewer.setProgress(index);
+  if(animate&&mapView==='pov'&&from!==null&&from!==index){const a=Math.min(from,index),b=Math.max(from,index),points=path.slice(a,b+1).map(id=>nodes[id].p);if(from>index)points.reverse();viewer.glideAlong(points,yaw);}
+  else{viewer.setPosition(n.p);if(yaw!==null&&viewer.mode==='pov'){viewer.yaw=yaw;viewer.pitch=viewer.povPitch;}}
+  viewer.view=showAll3d&&mapView==='3d'?'all':String(n.floor);viewer.updateVisibility();
+ }
+ else{viewer.setPosition(n.p);if(viewer.path!==path)viewer.setRoute(path);const ahead=path.slice(index+1).map(id=>nodes[id]).find(m=>m.floor===n.floor&&Math.hypot(m.p[0]-n.p[0],m.p[2]-n.p[2])>=2)||nodes[path[index+1]];if(ahead&&ahead.floor===n.floor)viewer.setHeading(n.p,ahead.p);}
+ $('floorSelect').value=n.floor;
+}
+$('start').onclick=()=>{plan();if(!path.length)return;screen='journey';step=0;shownIndex=null;$('planner').hidden=true;$('journey').hidden=false;document.body.classList.add('navigation');outdoorStage=$('journeyType').value==='outdoor';stage();window.scrollTo(0,0);if(!outdoorStage)speak();};
 $('floorSelect').onchange=()=>{const viewer=viewer2d;if(!viewer)return;viewer.view=$('floorSelect').value;viewer.follow=false;viewer.pan=[0,0];viewer.zoom=1;};
-$('next').onclick=()=>{if(outdoorStage){outdoorStage=false;stage();speak();return;}if(index+1<path.length){index++;renderCue();speak();}};
+function nextStep(){if(outdoorStage){outdoorStage=false;stage();speak();return;}if(step+1<steps.length){step++;renderCue();speak();}else showHome();}
+$('next').onclick=nextStep;
+$('prev').onclick=()=>{if(outdoorStage||step===0)return;step--;renderCue();speak();};
 $('repeat').onclick=()=>{if(!outdoorStage)speak();};
 for(const button of document.querySelectorAll('#mapViews button'))button.onclick=()=>setMapView(button.dataset.view);
 $('zoom3dIn').onclick=()=>{if(viewer3d)viewer3d.zoom=Math.max(.5,viewer3d.zoom/1.25);};
@@ -94,11 +155,14 @@ $('sourceFloor').onchange=()=>{populate('source',$('sourceFloor').value,'e'+$('s
 $('destFloor').onchange=()=>{populate('destination',$('destFloor').value);plan();};
 $('destinationType').onchange=()=>{const kind=destKind();syncDestinationField();if(kind!=='rooms'&&!amenities.some(a=>a.kind===kind&&a.floor===Number($('destFloor').value))){const first=amenities.find(a=>a.kind===kind);if(first)$('destFloor').value=first.floor;}populate('destination',$('destFloor').value);plan();};
 for(const id of ['source','destination','stepfree'])$(id).onchange=plan;
-$('profile').onchange=()=>{$('stepfree').checked=true;$('voice').checked=true;try{localStorage.setItem('gogo-profile',$('profile').value);}catch{}plan();};
-$('voice').onchange=()=>{if(!$('voice').checked)stopSpeech();};
+$('profile').onchange=()=>{$('stepfree').checked=true;syncProfileButtons();try{localStorage.setItem('gogo-profile',$('profile').value);}catch{}plan();};
+$('voice').onchange=()=>{if(!$('voice').checked)stopSpeech();try{localStorage.setItem('gogo-voice',$('voice').checked?'on':'off');}catch{}};
+try{if(localStorage.getItem('gogo-voice')==='off')$('voice').checked=false;}catch{}
 options($('buildingChoice'),places.map(p=>({id:p.id,name:p.name})), 'morgridge');
 try{const saved=localStorage.getItem('gogo-profile');if([...$('profile').options].some(o=>o.value===saved))$('profile').value=saved;}catch{}
-changeBuilding();$('profile').onchange();showHome();
+changeBuilding();$('profile').onchange();showHome();syncProfileButtons();
+// Links such as index.html?building=union&to=room1-1&view=pov&start=1 open a route directly (used for demos and screenshots).
+{const q=new URLSearchParams(location.search);if(places.some(p=>p.id===q.get('building'))){$('buildingChoice').value=q.get('building');changeBuilding();}const to=destItems.find(i=>i.id===q.get('to'));if(to)pickDestination(to);if(MAP_VIEWS.includes(q.get('view')))setMapView(q.get('view'),false);if(q.get('start')==='1'&&path.length){$('start').click();const n=Number(q.get('step'));if(n>0){step=Math.min(n,steps.length-1);renderCue(false);}}}
 let last=0;function frame(t){if(screen==='journey'&&!outdoorStage)activeViewer()?.tick(Math.min(.1,(t-last)/1000||0),$('profile').value);last=t;requestAnimationFrame(frame);}requestAnimationFrame(frame);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSpeech();});
 
@@ -135,7 +199,7 @@ function startBrowserSpeech(wake){
 }
 function mappedContext(){
  const place=places.find(p=>p.id===activeId);
- const current=path.length?cueFor(path,index,$('profile').value):null;
+ const current=path.length?{text:$('instruction').textContent||stepGuide(path,steps,step,$('profile').value).text}:null;
  return {currentLocation:{confirmed:Boolean(confirmedLocation),building:confirmedLocation?.building||place?.name||activeId,floor:confirmedLocation?.floorName||floorName(Number($('sourceFloor').value)),place:confirmedLocation?.place||$('source').selectedOptions[0]?.textContent||''},selectedDestination:{floor:floorName(Number($('destFloor').value)),place:$('destination').selectedOptions[0]?.textContent||''},accessPreference:$('profile').selectedOptions[0].textContent,navigationActive:screen==='journey',currentCue:current?.text||'',floors:floors.map(f=>({id:f.id,name:f.name})),destinations:destinations().map(d=>({name:d.name,floor:d.floor,kind:d.kind||'room'})),rules:['A starting building, floor, and mapped place must be verbally confirmed before a new route.','Only mapped destinations may be used for navigation.','Infer a mapped room floor from the catalog.','A floor-only destination request requires a short room or place follow-up.','Ask exactly one short spoken question for each missing fact.']};
 }
 function chooseDestination(d){
@@ -206,10 +270,10 @@ function answerPendingQuestion(raw){
 function runLocalCommand(raw){
  const q=clean(raw.replace(/hey\s+go\s*go/ig,''));
  if(!q)return {handled:true,text:'How can I help?'};
- if(/\b(next|continue|next step)\b/.test(q)&&screen==='journey'){if(outdoorStage){outdoorStage=false;stage();}else if(index+1<path.length){index++;renderCue();}dismissVoiceVisual();return {handled:true,text:$('instruction').textContent||'You are at the end of the route.'};}
+ if(/\b(next|continue|next step)\b/.test(q)&&screen==='journey'){if(outdoorStage){outdoorStage=false;stage();}else if(step+1<steps.length){step++;renderCue();}dismissVoiceVisual();return {handled:true,text:$('instruction').textContent||'You are at the end of the route.'};}
  if(/\b(repeat|say that again|current direction)\b/.test(q)&&screen==='journey'){dismissVoiceVisual();return {handled:true,text:$('instruction').textContent};}
  if(/where am i|current location|starting point/.test(q)){const source=$('source').selectedOptions[0]?.textContent||'the selected starting point';return {handled:true,text:`Your selected location is ${source} in ${places.find(p=>p.id===activeId)?.name}.`};}
- if(/what('| i)?s next|next direction/.test(q)&&path.length)return {handled:true,text:cueFor(path,index,$('profile').value).text};
+ if(/what('| i)?s next|next direction/.test(q)&&path.length)return {handled:true,text:screen==='journey'?$('instruction').textContent:stepGuide(path,steps,0,$('profile').value,destinationTitle()).text};
  const profiles=[['blind',/blind|low vision/],['wheelchair',/wheelchair/],['deaf',/deaf|hard of hearing/]];
  const profile=profiles.find(([,re])=>re.test(q));if(profile){$('profile').value=profile[0];$('profile').onchange();return {handled:true,text:`Access preference set to ${$('profile').selectedOptions[0].textContent}.`};}
  const building=buildingFromSpeech(q);if(building&&building.id!==activeId){$('buildingChoice').value=building.id;changeBuilding();confirmedLocation=null;beginLocationCheck();return {handled:true,text:''};}
@@ -247,5 +311,5 @@ $('voiceFab').onclick=()=>{if(voiceActive){closeAssistant();return;}beginVoiceIn
 $('settingsButton').onclick=()=>{$('ollamaServer').value=configuredOllamaUrl();$('settingsPanel').hidden=false;$('settingsBackdrop').hidden=false;};
 function closeSettings(){$('settingsPanel').hidden=true;$('settingsBackdrop').hidden=true;}
 $('settingsClose').onclick=closeSettings;$('settingsBackdrop').onclick=closeSettings;
-$('settingsSave').onclick=()=>{const value=$('ollamaServer').value.trim().replace(/\/$/,'');if(!/^https?:\/\//i.test(value))return;$('ollamaServer').value=value;try{localStorage.setItem('gogo-ollama-url',value);}catch{}closeSettings();};
+$('settingsSave').onclick=()=>{const value=$('ollamaServer').value.trim().replace(/\/$/,'');if(value&&!/^https?:\/\//i.test(value)){$('ollamaServer').focus();return;}try{if(value)localStorage.setItem('gogo-ollama-url',value);else localStorage.removeItem('gogo-ollama-url');}catch{}closeSettings();};
 setTimeout(()=>{if(window.GoGoNative?.setWakeWord)window.GoGoNative.setWakeWord(true);else startBrowserSpeech(true);},500);

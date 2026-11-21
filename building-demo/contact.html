@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Contact · GoGo</title>
+  <meta name="description" content="Get in touch about bringing GoGo to your building, partnerships, investment or feedback.">
+  <script src="theme.js?v=1"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=2">
+  <link rel="stylesheet" href="site.css?v=2">
+</head>
+<body>
+  <header class="site-header" id="siteHeader">
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="GoGo home"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#f4c542"/><path d="M16 6.5 24 25l-8-4.2L8 25z" fill="#0b0b09"/></svg>GoGo</a>
+      <nav class="site-nav" id="siteNav" aria-label="Main">
+        <a href="product.html#how">How it works</a><a href="product.html#features">Features</a><a href="product.html#buildings">Buildings</a><a href="about.html">About</a><a href="contact.html" aria-current="page">Contact</a>
+      </nav>
+      <div class="header-cta"><a class="btn btn-primary" href="index.html">Open navigator</a></div>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="wrap">
+        <p class="eyebrow">Contact</p>
+        <h1 class="display">Let's talk.</h1>
+        <p class="lead">Want GoGo in your building, have feedback on a route, or want to hear where we're going next? Send us a note.</p>
+      </div>
+    </section>
+    <section style="padding-top:16px">
+      <div class="wrap contact-grid">
+        <form class="form-card" id="contactForm" novalidate>
+          <div class="form-row">
+            <label class="field"><span class="field-label">Your name</span><input class="input" name="name" autocomplete="name" required></label>
+            <label class="field"><span class="field-label">Email</span><input class="input" name="email" type="email" autocomplete="email" required></label>
+          </div>
+          <div class="form-row">
+            <label class="field"><span class="field-label">Organization <span style="color:var(--faint)">(optional)</span></span><input class="input" name="org" autocomplete="organization"></label>
+            <label class="field"><span class="field-label">Topic</span><select class="select" name="topic">
+              <option value="building">Map my building</option>
+              <option value="investment">Investment</option>
+              <option value="partnership">Partnership</option>
+              <option value="feedback">Feedback on a route</option>
+              <option value="other">Something else</option>
+            </select></label>
+          </div>
+          <label class="field"><span class="field-label">Message</span><textarea class="textarea" name="message" required placeholder="Tell us about your building, your idea or what went wrong."></textarea></label>
+          <button class="btn btn-primary" type="submit">Send message</button>
+          <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+        </form>
+        <div>
+          <div class="side-card"><h3>Email</h3><p><a data-contact-email href="#"></a></p></div>
+          <div class="side-card"><h3>Mapping a building</h3><p>Floor plans in PDF or image form are enough to start. Tell us how many floors and which entrances are step-free, if you know.</p></div>
+          <div class="side-card"><h3>Found a wrong route?</h3><p>Tell us the building, where you started and where you were going. Route fixes go out with the next update.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div><a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#f4c542"/><path d="M16 6.5 24 25l-8-4.2L8 25z" fill="#0b0b09"/></svg>GoGo</a><p>Step-free directions inside buildings, for everyone who can't just take the stairs.</p></div>
+        <div><h4>Product</h4><ul><li><a href="index.html">Navigator</a></li><li><a href="downloads/GoGo.apk" download>Android app</a></li><li><a href="product.html#how">How it works</a></li><li><a href="product.html#buildings">Buildings</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="contact.html?topic=building">Map your building</a></li></ul></div>
+        <div><h4>Legal</h4><ul><li><a href="privacy.html">Privacy</a></li><li><a href="privacy.html#safety">Safety notice</a></li></ul></div>
+      </div>
+      <div class="footer-base"><span>© <span data-year>2026</span> GoGo</span><span>Not affiliated with or endorsed by the institutions whose buildings are mapped.</span></div>
+    </div>
+  </footer>
+  <script src="site.js?v=1" defer></script>
+</body>
+</html>

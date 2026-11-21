@@ -21,3 +21,7 @@ local.properties
 # Redundant local source-import staging copies
 building-demo/plans/plans/
 traveler-app/app/src/main/assets/web/plans/plans/
+
+# Android Studio project settings (per machine)
+.idea/
+*.iml

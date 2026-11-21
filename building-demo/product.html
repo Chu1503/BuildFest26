@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>GoGo · Step-free indoor navigation</title>
+  <meta name="description" content="GoGo plans routes inside buildings that avoid stairs, steep ramps and narrow doors, then guides you turn by turn with spoken directions and a 3D view.">
+  <meta property="og:title" content="GoGo · Step-free indoor navigation">
+  <meta property="og:description" content="Routes inside buildings that avoid stairs, steep ramps and narrow doors, with turn-by-turn guidance in 2D, 3D and first person.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="theme.js?v=1"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=2">
+  <link rel="stylesheet" href="site.css?v=2">
+</head>
+<body>
+  <header class="site-header" id="siteHeader">
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="GoGo home"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#f4c542"/><path d="M16 6.5 24 25l-8-4.2L8 25z" fill="#0b0b09"/></svg>GoGo</a>
+      <nav class="site-nav" id="siteNav" aria-label="Main">
+        <a href="#how">How it works</a><a href="#features">Features</a><a href="#buildings">Buildings</a><a href="about.html">About</a><a href="contact.html">Contact</a>
+      </nav>
+      <div class="header-cta"><a class="btn btn-primary" href="index.html">Open navigator</a></div>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow">Indoor navigation for accessibility</p>
+          <h1 class="display">Step-free directions <em>inside</em> the building.</h1>
+          <p class="lead">GoGo plans routes that avoid stairs, steep ramps and narrow doorways, then guides you turn by turn, with spoken directions and a 3D view of the floor you're on.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="index.html">Try the navigator<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            <a class="btn" href="downloads/GoGo.apk" download><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Get it for Android</a>
+          </div>
+          <ul class="hero-note">
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Free to use</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>No account</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Android 8.0 and newer</li>
+          </ul>
+        </div>
+        <div class="phones" aria-hidden="true">
+          <div class="phone front"><img src="assets/phone-pov.webp" alt="" width="360" height="778"></div>
+          <div class="phone back"><img src="assets/phone-3d.webp" alt="" width="360" height="778" loading="lazy"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div class="wrap">
+        <dl>
+          <div><dd>5</dd><dt>campus buildings mapped</dt></div>
+          <div><dd>208</dd><dt>rooms and places you can search</dt></div>
+          <div><dd>3,165</dd><dt>routes checked automatically on every change</dt></div>
+          <div><dd>3</dd><dt>access profiles: step-free, low vision, Deaf</dt></div>
+        </dl>
+      </div>
+    </div>
+
+    <section id="problem">
+      <div class="wrap split">
+        <div class="reveal">
+          <p class="eyebrow">The gap</p>
+          <h2 class="section-title">Phone maps stop at the front door.</h2>
+        </div>
+        <div class="reveal">
+          <p>Outside, you get a blue line to the entrance. Inside, the things that decide whether you can get somewhere, like where the elevator is, which entrance has no steps and where the accessible restroom is, are spread across PDF floor plans, wall signs and whoever is at the front desk.</p>
+          <p>For a wheelchair user, a wrong turn can mean backtracking a whole floor to find a lift. GoGo puts that information into a route you can follow.</p>
+          <div class="quote-card">
+            <ul>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>"Room 2120 is on the second floor. Take the stairs past the café."</li>
+              <li class="ok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>"Head straight 12 m, take the elevator to Floor 2, then turn left. 2 minutes."</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">How it works</p>
+          <h2 class="section-title">From "where is it?" to "I'm here" in three steps.</h2>
+        </div>
+        <ol class="steps">
+          <li class="reveal"><h3>Search where you're going</h3><p>Type a room number, a name like "Great Hall", or just "restroom". Results appear as you type, with the floor for each one.</p></li>
+          <li class="reveal"><h3>GoGo plans around your needs</h3><p>Step-free routes skip stairs, slopes steeper than 8% and doorways narrower than 90 cm. Elevators and ramps are chosen for you.</p></li>
+          <li class="reveal"><h3>Follow it, step by step</h3><p>A banner shows the next turn and how far it is. Hear each step read aloud, or follow the 2D map, the 3D model or the navigation view.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Features</p>
+          <h2 class="section-title">Built for the people standard maps leave out.</h2>
+        </div>
+        <div class="features reveal">
+          <div class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="4.5" r="1.8" fill="currentColor"/><path d="M11 8v6h5l2.5 5M11 10.5h5M8.5 11a5.5 5.5 0 1 0 6.9 7.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Routes for how you move</h3><p>Pick step-free, low vision or Deaf and hard of hearing. Each profile changes the route and how it's explained.</p></div>
+          <div class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div><h3>Search every room</h3><p>Rooms, galleries, restrooms, elevators and exits, all searchable by name or number. One tap finds the nearest restroom or exit.</p></div>
+          <div class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4ZM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>See it or hear it</h3><p>Every step is read aloud on request. On Android you can also ask by voice: "Take me to the nearest restroom."</p></div>
+          <div class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 7.5l9 4.5 9-4.5L12 3ZM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div><h3>Three ways to view</h3><p>A flat 2D floor plan, a 3D model of every floor, and a navigation view that follows you like a car sat-nav.</p></div>
+          <div class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8.4 7.5 9.5 4.3-1.1 7.5-5 7.5-9.5V6L12 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.8 12 2.3 2.3 4.3-4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Clear about what's verified</h3><p>If a route ends near a restroom rather than at its door, or an exit isn't a verified evacuation route, GoGo says so.</p></div>
+          <div class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11 18.5h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><h3>Web and Android</h3><p>Plan on a laptop or follow on your phone. Routing runs on the device, so the Android app keeps working with a weak signal.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="showcase" aria-label="The navigator on the web">
+      <div class="wrap reveal">
+        <figure style="margin:0">
+          <div class="browser"><div class="browser-bar"><span></span><span></span><span></span><p>Navigator</p></div><img src="assets/web-pov.webp" alt="The GoGo web navigator showing a turn-by-turn route in the navigation view, with the next turn, time remaining and destination." width="1440" height="900" loading="lazy"></div>
+          <figcaption>The web navigator: plan a route on any computer, with the same guidance as the app.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="buildings">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Mapped so far</p>
+          <h2 class="section-title">Five buildings, every floor.</h2>
+          <p class="section-intro">Pick one to open it in the navigator. Each score is our estimate from the step-free entrances, elevators and restrooms we've mapped.</p>
+        </div>
+        <div class="buildings reveal">
+          <a class="building" href="index.html?building=morgridge"><small>Research &amp; teaching · 8 floors</small><strong>Morgridge Hall</strong><span class="meta">Accessibility <b>95<small> / 100</small></b></span></a>
+          <a class="building" href="index.html?building=union"><small>Gather &amp; recharge · 5 floors</small><strong>Memorial Union</strong><span class="meta">Accessibility <b>94<small> / 100</small></b></span></a>
+          <a class="building" href="index.html?building=library"><small>Study &amp; work · 3 floors</small><strong>College Library</strong><span class="meta">Accessibility <b>91<small> / 100</small></b></span></a>
+          <a class="building" href="index.html?building=discovery"><small>Learn &amp; explore · 3 floors</small><strong>Discovery Building</strong><span class="meta">Accessibility <b>96<small> / 100</small></b></span></a>
+          <a class="building" href="index.html?building=chazen"><small>Arts &amp; culture · 3 floors</small><strong>Chazen Museum of Art</strong><span class="meta">Accessibility <b>88<small> / 100</small></b></span></a>
+        </div>
+        <p class="footnote">Scores have not been independently audited. Always follow posted signs, and in an emergency follow staff directions.</p>
+      </div>
+    </section>
+
+    <section id="organizations">
+      <div class="wrap">
+        <div class="cta-band reveal">
+          <p class="eyebrow">For campuses and venues</p>
+          <h2 class="section-title">Bring GoGo to your building.</h2>
+          <p>Send us your floor plans. We turn them into a routable indoor map, test every route between mapped rooms, and publish it on the web and Android, with your visitors' access needs built in.</p>
+          <ul class="audiences"><li>Universities</li><li>Hospitals</li><li>Museums</li><li>Stadiums &amp; arenas</li><li>Airports &amp; stations</li></ul>
+          <div class="hero-actions"><a class="btn btn-primary" href="contact.html">Talk to us</a><a class="btn" href="about.html">About GoGo</a></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div><a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#f4c542"/><path d="M16 6.5 24 25l-8-4.2L8 25z" fill="#0b0b09"/></svg>GoGo</a><p>Step-free directions inside buildings, for everyone who can't just take the stairs.</p></div>
+        <div><h4>Product</h4><ul><li><a href="index.html">Navigator</a></li><li><a href="downloads/GoGo.apk" download>Android app</a></li><li><a href="product.html#how">How it works</a></li><li><a href="product.html#buildings">Buildings</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="contact.html?topic=building">Map your building</a></li></ul></div>
+        <div><h4>Legal</h4><ul><li><a href="privacy.html">Privacy</a></li><li><a href="privacy.html#safety">Safety notice</a></li></ul></div>
+      </div>
+      <div class="footer-base"><span>© <span data-year>2026</span> GoGo</span><span>Not affiliated with or endorsed by the institutions whose buildings are mapped.</span></div>
+    </div>
+  </footer>
+  <script src="site.js?v=1" defer></script>
+</body>
+</html>

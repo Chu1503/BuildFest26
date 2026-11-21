@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Privacy and safety · GoGo</title>
+  <meta name="description" content="How GoGo handles your data, and how to use its directions safely.">
+  <script src="theme.js?v=1"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=2">
+  <link rel="stylesheet" href="site.css?v=2">
+</head>
+<body>
+  <header class="site-header" id="siteHeader">
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="GoGo home"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#f4c542"/><path d="M16 6.5 24 25l-8-4.2L8 25z" fill="#0b0b09"/></svg>GoGo</a>
+      <nav class="site-nav" id="siteNav" aria-label="Main">
+        <a href="product.html#how">How it works</a><a href="product.html#features">Features</a><a href="product.html#buildings">Buildings</a><a href="about.html">About</a><a href="contact.html">Contact</a>
+      </nav>
+      <div class="header-cta"><a class="btn btn-primary" href="index.html">Open navigator</a></div>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="wrap">
+        <p class="eyebrow">Privacy and safety</p>
+        <h1 class="display">Plain-language privacy.</h1>
+        <p class="lead">GoGo works without an account and doesn't track you. Here is exactly what happens to your data.</p>
+      </div>
+    </section>
+    <section style="padding-top:8px">
+      <div class="wrap prose">
+        <h2>The website</h2>
+        <ul>
+          <li>No account, no cookies for tracking, no advertising.</li>
+          <li>Your recent searches and preferences (such as your access profile) are saved in your own browser so they're there next time. You can clear them by clearing site data.</li>
+          <li>The campus map loads map tiles from OpenStreetMap, which receives standard request information such as your IP address. Fonts load from Google Fonts.</li>
+          <li>The site is hosted on Vercel, which keeps standard server logs.</li>
+        </ul>
+        <h2>The Android app</h2>
+        <ul>
+          <li>Routes are calculated on your phone. Your start and destination are not sent to us.</li>
+          <li>Spoken directions use your phone's built-in text-to-speech.</li>
+          <li>If you use the voice assistant, your phone's speech recognition service turns your voice into text. Requests it can't handle on the phone are sent to the voice assistant server set in Settings.</li>
+          <li>The microphone is only used for voice commands.</li>
+        </ul>
+        <h2 id="safety">Safety notice</h2>
+        <p>GoGo's maps are built from floor plans and checked automatically, but buildings change: doors get locked, elevators go out of service and rooms are rearranged. Always follow posted signs and staff directions.</p>
+        <p>Exits shown in GoGo are mapped building entrances. They are not verified emergency evacuation routes. In an emergency, follow the building's evacuation signs and the instructions of staff and emergency services.</p>
+        <p>Accessibility scores are our own estimate from the features we've mapped. They have not been independently audited.</p>
+        <h2>Questions</h2>
+        <p>Ask us anything about privacy on the <a href="contact.html">contact page</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div><a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#f4c542"/><path d="M16 6.5 24 25l-8-4.2L8 25z" fill="#0b0b09"/></svg>GoGo</a><p>Step-free directions inside buildings, for everyone who can't just take the stairs.</p></div>
+        <div><h4>Product</h4><ul><li><a href="index.html">Navigator</a></li><li><a href="downloads/GoGo.apk" download>Android app</a></li><li><a href="product.html#how">How it works</a></li><li><a href="product.html#buildings">Buildings</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="contact.html?topic=building">Map your building</a></li></ul></div>
+        <div><h4>Legal</h4><ul><li><a href="privacy.html">Privacy</a></li><li><a href="privacy.html#safety">Safety notice</a></li></ul></div>
+      </div>
+      <div class="footer-base"><span>© <span data-year>2026</span> GoGo</span><span>Not affiliated with or endorsed by the institutions whose buildings are mapped.</span></div>
+    </div>
+  </footer>
+  <script src="site.js?v=1" defer></script>
+</body>
+</html>

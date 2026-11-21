@@ -45,6 +45,7 @@ public class MainActivity extends Activity implements RecognitionListener {
     private static final int AUDIO_PERMISSION = 41;
     private final Handler main = new Handler(Looper.getMainLooper());
     private WebView web;
+    private FrameLayout root;
     private TextToSpeech tts;
     private SpeechRecognizer recognizer;
     private boolean speakingReady;
@@ -84,7 +85,7 @@ public class MainActivity extends Activity implements RecognitionListener {
             @Override public void onPageFinished(WebView view, String url) { pageReady = true; }
         });
 
-        FrameLayout root = new FrameLayout(this);
+        root = new FrameLayout(this);
         root.setBackgroundColor(0xff080808);
         root.addView(web, new FrameLayout.LayoutParams(-1, -1));
         if (Build.VERSION.SDK_INT >= 30) getWindow().setDecorFitsSystemWindows(false);
@@ -112,6 +113,12 @@ public class MainActivity extends Activity implements RecognitionListener {
                 });
             }
         });
+        // Bundled pages change with each release; drop any cached copies after an update.
+        try {
+            long version = Build.VERSION.SDK_INT >= 28 ? getPackageManager().getPackageInfo(getPackageName(), 0).getLongVersionCode() : getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+            android.content.SharedPreferences prefs = getSharedPreferences("gogo", MODE_PRIVATE);
+            if (prefs.getLong("webVersion", -1) != version) { web.clearCache(true); prefs.edit().putLong("webVersion", version).apply(); }
+        } catch (PackageManager.NameNotFoundException ignored) {}
         web.loadUrl("https://appassets.androidplatform.net/web/index.html");
     }
 
@@ -293,7 +300,26 @@ public class MainActivity extends Activity implements RecognitionListener {
         return text.toString();
     }
 
+    // Matches the window behind the web page and the status/navigation bar icons to the app theme.
+    private void applyThemeColors(boolean light) {
+        int color = light ? 0xfff4f3ef : 0xff080808;
+        if (web != null) web.setBackgroundColor(color);
+        if (root != null) root.setBackgroundColor(color);
+        getWindow().getDecorView().setBackgroundColor(color);
+        if (Build.VERSION.SDK_INT >= 30) {
+            android.view.WindowInsetsController controller = getWindow().getInsetsController();
+            int mask = android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+            if (controller != null) controller.setSystemBarsAppearance(light ? mask : 0, mask);
+        } else {
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+            if (light) flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            getWindow().getDecorView().setSystemUiVisibility(flags);
+        }
+    }
+
     public final class Bridge {
+        @JavascriptInterface public boolean isSystemDark() { return (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES; }
+        @JavascriptInterface public void setThemeColors(boolean light) { runOnUiThread(() -> applyThemeColors(light)); }
         @JavascriptInterface public void closeApp() { runOnUiThread(() -> finish()); }
         @JavascriptInterface public void speak(String text) { runOnUiThread(() -> speakText(text)); }
         @JavascriptInterface public void stopSpeech() { runOnUiThread(() -> { if (tts != null) tts.stop(); }); }
