@@ -65,11 +65,11 @@ The builder reads the walls from each PDF and the room labels, elevators, restro
 
 ## Android
 
-[Download GoGo 0.13.1 APK](building-demo/downloads/GoGo.apk) for Android 8 or later. Package: `dev.gogo.traveler`, version code 18. This development build includes every available floor for all five demo buildings, the centered listening waveform and cross control, spoken starting-location confirmation, floor-aware destination follow-ups, foreground “Hey GoGo,” voice-controlled next steps and local Ollama interpretation over the current Wi-Fi network.
+[Download GoGo 0.17.0 APK](building-demo/downloads/GoGo.apk) for Android 8 or later. Package: `dev.gogo.traveler`, version code 22. Version 0.17.0 adds the traced Discovery first floor and the six-level Memorial Union. It is signed with a new development key, so uninstall an older GoGo build before installing it. This development build includes every available floor for all five demo buildings, the centered listening waveform and cross control, spoken starting-location confirmation, floor-aware destination follow-ups, foreground “Hey GoGo,” voice-controlled next steps and local Ollama interpretation over the current Wi-Fi network.
 
 ```sh
 node scripts/sync-android-web.mjs
-python scripts/build-apk.py --tools /path/to/android-tools --keystore /path/to/demo.keystore --output releases/GoGo-v0.13.1.apk
+python scripts/build-apk.py --tools /path/to/android-tools --keystore /path/to/demo.keystore --output releases/GoGo-v0.17.0.apk
 ```
 
 The manual builder expects JDK 17, Android platform 35 and build tools 35.0.0 under the supplied tools path. The standard Gradle Android project is in `traveler-app`. APK signing, alignment, integrity and asset parity passed. Phone installation, microphone recognition and native Back gestures still need physical-device verification.
