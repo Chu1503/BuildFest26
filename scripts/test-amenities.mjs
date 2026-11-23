@@ -6,7 +6,7 @@ let checked=0;
 for(const building of ['morgridge','union','library','chazen','discovery']){
  selectBuilding(building);refreshAmenities();
  assert(amenities.some(a=>a.kind==='exit'));
- if(building==='discovery')assert(!amenities.some(a=>a.kind==='bathroom'),'Do not invent bathrooms for the conceptual model');
+ if(building!=='morgridge')assert(amenities.some(a=>a.kind==='bathroom'),`${building}: restrooms traced from the plan`);
  for(const a of amenities){
   assert(nodes[a.routeId]);assert.equal(nodes[a.routeId].floor,a.floor);
   assert(floors.some(f=>f.id===a.floor));assert(a.p.every(Number.isFinite));

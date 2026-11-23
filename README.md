@@ -50,7 +50,18 @@ Choose a building, accessibility profile, starting place and destination in the 
 
 The current demo integrates Morgridge Hall, Memorial Union, College Library, Discovery and Chazen. Bathroom destinations route to nearby mapped approaches, not verified bathroom doors. Emergency exit/assistance displays information, not a validated evacuation route. The capabilities above describe the project vision: live obstacle detection and emergency navigation are not production features of this build. Obstacle simulation remains covered by routing tests.
 
-Floor traces and outdoor routes are approximate demo data; some elevator links are inferred, Chazen's supplied plan is from 2021, and Discovery is conceptual. The prototype is not validated for real-world navigation.
+Floor traces and outdoor routes are approximate demo data; some elevator links are inferred, Chazen's supplied plan is from 2021, and only Discovery's first floor is mapped (from its October 2024 plan). The prototype is not validated for real-world navigation.
+
+## Rebuilding floor plans
+
+Discovery (Level 1, October 2024 plan), Memorial Union (all six levels from the 2017 directory) and Chazen (Spring 2021 plan) are generated from the PDFs in `building-demo/plans/`:
+
+```sh
+pip install pymupdf opencv-python-headless numpy scipy scikit-image
+python scripts/floorplans/assemble.py
+```
+
+The builder reads the walls from each PDF and the room labels, elevators, restrooms and entrances listed in `mu_build.py`, `disc_build.py` and `chz_build.py`. It writes the floors, 3D meshes and routing graph into `waypoint-data.js`. Doors that a plan leaves out are listed as `openings`. Run the checks below afterwards, then `node scripts/sync-android-web.mjs`.
 
 ## Android
 

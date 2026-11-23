@@ -13,7 +13,6 @@ export function selectBuilding(id){
  for(const n of b.graph.nodes)nodes[n.id]={name:n.label,floor:n.floor+1,p:[n.x,n.floor*4.5,n.z]};
  edges.push(...b.graph.edges.map(e=>({a:e.a,b:e.b,d:e.meters,type:e.kind==='elevator'?(e.id.startsWith('liftB')?'elevatorB':'elevatorA'):e.kind||'walk',id:e.id,slope:e.slope,width:e.width,tactile:e.tactile})));
  b.plan.floors.forEach((source,i)=>{const id=i+1;floors.push({id,name:source.label,source,mesh:b.floorMeshes[i],anchor:source.lift||source.spawn,scale:source.scale,rooms:[],holes:[],stairs:[]});const lifts=source.lifts||[source.lift||source.spawn];nodes['e'+id]={name:'Elevator lobby · '+source.label,floor:id,p:worldPoint(source,lifts[0],i)};const closest=Object.entries(nodes).filter(([key,n])=>n.floor===id&&key!=='e'+id).sort((a,b)=>dist(a[1].p,nodes['e'+id].p)-dist(b[1].p,nodes['e'+id].p))[0];if(closest)edges.push({a:'e'+id,b:closest[0],d:.01,type:'walk'});});
- if(id==='discovery')for(const f of floors){const n=nodes['b'+(f.id-1)];nodes['e'+f.id+'-1']={...n,name:'East elevator lobby · '+f.name};edges.push({a:'e'+f.id+'-1',b:'b'+(f.id-1),d:.01,type:'walk'});}
  for(const [id,n] of Object.entries(nodes))if(id==='entrance'||id.startsWith('room')||/^e\d+(?:-1)?$/.test(id))catalog.push({id,name:n.name,floor:n.floor,routable:true});
  }
  for(const f of floors)floorById[f.id]=f;
