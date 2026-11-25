@@ -61,6 +61,13 @@ function highlight(el,text,tokens){
  if(pos<text.length)el.append(text.slice(pos));
 }
 
+// Best matches for a free-text query (used by voice commands).
+export function rankPlaces(items,text,limit=3){
+ const query=norm(text),tokens=query?query.split(' '):[];if(!tokens.length)return [];
+ return items.map(item=>({...item,_title:norm(item.title),_extra:norm([item.subtitle,item.badge,item.keywords,item.kind].join(' '))}))
+  .map(item=>[score(item,tokens,query),item]).filter(([s])=>s>0).sort((a,b)=>b[0]-a[0]).slice(0,limit).map(([,item])=>item);
+}
+
 let uid=0;
 export function createSearch(root,{items,onPick,suggestions,recentKey,emptyText='No matching places',limit=8}){
  const input=root.querySelector('input'),clear=root.querySelector('.search-clear'),list=document.createElement('ul'),id='search-list-'+(++uid);

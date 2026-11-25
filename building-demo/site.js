@@ -29,3 +29,5 @@ if(form){
   status.textContent='Your email app should open with the message ready to send.';
  });
 }
+
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));

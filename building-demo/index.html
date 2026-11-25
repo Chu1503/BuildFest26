@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0a0a0a">
   <title>GoGo · Step-free indoor navigation</title>
   <meta name="description" content="Plan a step-free route inside a campus building and follow it turn by turn, with spoken directions and 2D, 3D and navigation views.">
@@ -11,13 +11,19 @@
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/og.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <script src="theme.js?v=1"></script>
+  <script src="theme.js?v=2"></script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="GoGo">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="theme.css?v=2">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="theme.css?v=3">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <header class="app-header">
@@ -26,11 +32,16 @@
       <a href="index.html" aria-current="page">Navigator</a><a href="product.html">Product</a><a href="about.html">About</a><a href="contact.html">Contact</a><a href="privacy.html">Privacy</a>
     </nav>
     <button class="app-menu" id="appMenu" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="appNav"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="voice-button" id="voiceButton" type="button" aria-label="Voice commands" aria-pressed="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm-7-3a1 1 0 1 1 2 0 5 5 0 0 0 10 0 1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-2.08A7 7 0 0 1 5 12Z" fill="currentColor"/></svg></button>
     <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></button>
     <a class="btn btn-primary app-get" href="downloads/GoGo.apk" download><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Android app</a>
   </header>
   <main class="app-main">
     <aside id="planner" class="planner" aria-labelledby="plannerTitle">
+      <div class="install-card" id="installCard" hidden>
+        <div><strong>Install GoGo on this phone</strong><span id="installText">Tap <svg class="share-glyph" viewBox="0 0 24 24" aria-label="Share"><path d="M12 3v12m0-12L8 7m4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg> Share, then <b>Add to Home Screen</b>. It opens full screen and works offline.</span><button class="btn btn-primary" id="installButton" type="button" hidden>Install app</button></div>
+        <button class="install-close" id="installClose" type="button" aria-label="Dismiss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
       <div class="planner-head">
         <h1 id="plannerTitle">Plan a route</h1>
         <p>Search any room, restroom or exit. Routes avoid stairs and steep slopes.</p>
@@ -133,12 +144,13 @@
       </div>
     </section>
   </main>
+  <p class="voice-toast" id="voiceToast" role="status" aria-live="polite" hidden></p>
   <dialog id="liftDialog">
     <h2>Choose a floor</h2>
     <select id="liftFloor" aria-label="Elevator destination"></select>
     <div class="dialog-actions"><button id="closeLift" class="btn">Cancel</button><button id="rideLift" class="btn btn-primary">Go</button></div>
   </dialog>
   <script src="vendor/leaflet/leaflet.js"></script>
-  <script type="module" src="app.js?v=10"></script>
+  <script type="module" src="app.js?v=11"></script>
 </body>
 </html>

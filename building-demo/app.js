@@ -3,7 +3,7 @@ import {floors,selectBuilding,activeId,model} from './active-building.js';
 import {places,outdoorRoute} from './campus.js';
 import {BuildingViewer} from './viewer.js?v=6';
 import {amenities,refreshAmenities,accessibility} from './amenities.js';
-import {createSearch} from './place-search.js';
+import {createSearch,rankPlaces} from './place-search.js';
 import {destinationItems,sourceItems,routeSteps,stepGuide,headingAhead,maneuverSvg,maneuverKind,formatDistance,arrivalTime,floorLabel} from './nav-guide.js';
 
 const $=id=>document.getElementById(id);
@@ -276,3 +276,56 @@ function frame(time){
 }
 requestAnimationFrame(frame);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){playing=false;stopSpeech();}});
+
+// ---- Installed app (iPhone / Android home screen) -----------------------------------
+const standalone=document.documentElement.classList.contains('standalone');
+if('serviceWorker' in navigator&&!window.GoGoNative&&(location.protocol==='https:'||location.hostname==='localhost'))
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+{
+  const dismissed=()=>{try{return localStorage.getItem('gogo-install-dismissed')==='1';}catch{return false;}};
+  const hide=()=>{$('installCard').hidden=true;try{localStorage.setItem('gogo-install-dismissed','1');}catch{}};
+  const ios=document.documentElement.classList.contains('ios'),phone=matchMedia('(max-width:1000px)').matches;
+  if(ios&&!standalone&&phone&&!dismissed())$('installCard').hidden=false;
+  let deferred=null;
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;if(standalone||dismissed())return;$('installText').textContent='Add GoGo to your home screen. It opens full screen and works offline.';$('installButton').hidden=false;$('installCard').hidden=false;});
+  $('installButton').onclick=async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice.catch(()=>{});deferred=null;hide();};
+  $('installClose').onclick=hide;
+  addEventListener('appinstalled',hide);
+}
+
+// ---- Voice commands (where the browser supports speech recognition) ----------------
+{
+  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let recognizer=null,toastTimer=0;
+  const toast=(text,ms=3200)=>{clearTimeout(toastTimer);$('voiceToast').textContent=text;$('voiceToast').hidden=false;if(ms)toastTimer=setTimeout(()=>{$('voiceToast').hidden=true;},ms);};
+  const say=text=>{toast(text);if(profile()==='deaf'||!$('voice').checked)return;if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}};
+  const clean=t=>t.toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+  function command(raw){
+    const q=clean(raw);
+    if(!q){say('Sorry, I did not catch that.');return;}
+    if(/^(next|next step|continue|go on)$/.test(q)){if(path.length){if(!journeyStarted)$('start').click();else advance();}return;}
+    if(/^(back|previous|go back|previous step)$/.test(q)){$('prev').click();return;}
+    if(/^(repeat|again|say again|say that again|what now)$/.test(q)){if(path.length)say($('instruction').textContent);return;}
+    if(/^(stop|end|end route|cancel|finish)$/.test(q)){endRoute();say('Route ended.');return;}
+    if(/^(start|go|lets go|start navigation)$/.test(q)){$('start').click();return;}
+    const quick=/(restroom|bathroom|toilet|washroom)/.test(q)?'bathroom':/\bexit|way out\b/.test(q)?'exit':/\b(elevator|lift)\b/.test(q)?'elevator':null;
+    if(quick&&/(nearest|closest|find|where|need|take me|go to)/.test(q)||quick&&q.split(' ').length<=2){document.querySelector(`#quickChips [data-quick="${quick}"]`).click();if(path.length){say(`Route to ${destinationTitle()}.`);$('start').click();}return;}
+    const target=q.replace(/^(please |ok |okay )?(take me to|navigate to|directions to|go to|get me to|find|where is|show me|i need|i want to go to)\s+/,'').replace(/\b(the|please|room)\b/g,' ').trim();
+    const [best]=rankPlaces(destItems,target,1);
+    if(!best){say(`I couldn't find ${target} in this building.`);return;}
+    pickDestination(best);
+    if(path.length){say(`Going to ${best.title}.`);$('start').click();}else say(`There's no step-free route to ${best.title} yet.`);
+  }
+  if(Recognition){
+    const button=$('voiceButton');button.hidden=false;
+    button.onclick=()=>{
+      if(recognizer){recognizer.abort();return;}
+      recognizer=new Recognition();recognizer.lang=navigator.language||'en-US';recognizer.interimResults=false;recognizer.maxAlternatives=1;
+      recognizer.onstart=()=>{button.setAttribute('aria-pressed','true');toast('Listening… try "take me to the library" or "next"',0);};
+      recognizer.onresult=e=>{const text=e.results[0][0].transcript;toast(`"${text}"`);command(text);};
+      recognizer.onerror=e=>toast(e.error==='not-allowed'||e.error==='service-not-allowed'?'Allow microphone access to use voice commands.':'Sorry, I did not catch that.');
+      recognizer.onend=()=>{button.setAttribute('aria-pressed','false');recognizer=null;};
+      try{recognizer.start();}catch{recognizer=null;toast('Voice commands are not available right now.');}
+    };
+  }
+}

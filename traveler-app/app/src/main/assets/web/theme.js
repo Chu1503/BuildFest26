@@ -21,6 +21,8 @@
  function set(v){try{if(v==='system')localStorage.removeItem(KEY);else localStorage.setItem(KEY,v);}catch(e){}apply();}
  if(mq){var onChange=function(){if(stored()==='system')apply();};if(mq.addEventListener)mq.addEventListener('change',onChange);else if(mq.addListener)mq.addListener(onChange);}
  window.GoGoTheme={resolved:resolved,stored:stored,set:set,toggle:function(){set(resolved()==='dark'?'light':'dark');}};
+ if(/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))root.classList.add('ios');
+ if(window.navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))root.classList.add('standalone');
  apply();
  document.addEventListener('DOMContentLoaded',function(){
   document.querySelectorAll('[data-theme-toggle]').forEach(function(b){b.addEventListener('click',function(){window.GoGoTheme.toggle();});});

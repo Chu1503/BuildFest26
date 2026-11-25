@@ -1,0 +1,18 @@
+{
+  "name": "GoGo · Step-free indoor navigation",
+  "short_name": "GoGo",
+  "description": "Step-free routes inside campus buildings, with turn-by-turn guidance and spoken directions.",
+  "id": "/",
+  "start_url": "/?source=home-screen",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "categories": ["navigation", "travel", "accessibility"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

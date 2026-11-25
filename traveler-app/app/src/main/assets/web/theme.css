@@ -148,4 +148,7 @@
 .trip-actions .primary,.trip-actions .primary:hover{color:var(--on-yellow);background:var(--yellow);border-color:var(--yellow)}
 .trip-actions button:disabled{opacity:.35;cursor:default}
 
+/* iOS zooms into any field under 16px; keep text inputs at 16px there. */
+@supports(-webkit-touch-callout:none){input,select,textarea{font-size:max(16px,1em)!important}}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}

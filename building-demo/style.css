@@ -2,7 +2,7 @@
 html{font-family:var(--font);font-size:15px;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
 body{margin:0;min-height:100vh;background:var(--bg)}
 
-.app-header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:28px;height:64px;padding:0 clamp(16px,3vw,36px);background:var(--header-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
+.app-header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:28px;height:calc(64px + env(safe-area-inset-top));padding:env(safe-area-inset-top) max(clamp(16px,3vw,36px),env(safe-area-inset-right)) 0 max(clamp(16px,3vw,36px),env(safe-area-inset-left));background:var(--header-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
 .app-nav{display:flex;gap:4px;margin-left:auto}
 .app-nav a{padding:8px 12px;font-size:14px;font-weight:550;color:var(--muted);text-decoration:none;border-radius:9px}
 .app-nav a:hover{color:var(--text);background:var(--surface-2)}
@@ -10,7 +10,7 @@ body{margin:0;min-height:100vh;background:var(--bg)}
 .app-menu{display:none;place-items:center;width:40px;height:40px;padding:0;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:12px;cursor:pointer}.app-menu svg{width:20px;height:20px}
 .app-get{min-height:38px;padding:8px 14px;font-size:14px}
 
-.app-main{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px;height:calc(100vh - 64px);max-width:1680px;margin:0 auto;padding:18px clamp(16px,3vw,36px)}
+.app-main{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px;height:calc(100vh - 64px - env(safe-area-inset-top));height:calc(100dvh - 64px - env(safe-area-inset-top));max-width:1680px;margin:0 auto;padding:18px clamp(16px,3vw,36px)}
 .planner,.experience{background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--radius-l)}
 .planner{min-height:0;padding:22px;overflow:auto;scrollbar-width:thin}
 .planner-head h1{margin:0;font-size:22px;font-weight:750;letter-spacing:-.5px}
@@ -57,19 +57,33 @@ dialog select{width:100%;padding:11px 12px;font:inherit;color:var(--text);backgr
 .status{display:none!important}
 
 @media(max-width:1000px){
- .app-main{grid-template-columns:1fr;gap:14px;height:auto;padding:12px}
+ .app-main{grid-template-columns:1fr;gap:14px;height:auto;padding:12px 12px calc(12px + env(safe-area-inset-bottom))}
  .planner{overflow:visible}
  .experience{min-height:0}#scene{flex:none;height:62vh;min-height:360px}#outdoorMap{flex:none;height:60vh}
  .app-menu{display:grid;margin-left:auto}.app-get{order:3}
  .app-nav{display:none}
  .app-header.open{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--bg)}
- .app-header.open .app-nav{position:fixed;left:0;right:0;top:64px;bottom:0;z-index:50;display:flex;flex-direction:column;gap:2px;margin:0;padding:14px 16px;background:var(--bg);border-top:1px solid var(--line-soft)}
+ .app-header.open .app-nav{position:fixed;left:0;right:0;top:calc(64px + env(safe-area-inset-top));bottom:0;z-index:50;display:flex;flex-direction:column;gap:2px;margin:0;padding:14px 16px;background:var(--bg);border-top:1px solid var(--line-soft)}
  .app-header.open .app-nav a{padding:13px 10px;font-size:16px}
 }
 @media(max-width:560px){
- .app-header{gap:10px;height:58px}.app-get{padding:8px 11px}.app-header.open .app-nav{top:58px}
- .app-main{padding:8px}.planner{padding:18px}
+ .app-header{gap:10px;height:calc(58px + env(safe-area-inset-top))}.app-get{padding:8px 11px}.app-header.open .app-nav{top:calc(58px + env(safe-area-inset-top))}
+ .app-main{padding:8px 8px calc(8px + env(safe-area-inset-bottom))}.planner{padding:18px}
  .toolbar{flex-wrap:wrap}.views{width:100%;margin-left:0}.views button{flex:1;padding:6px 8px}
  .nav-text h1{font-size:19px}.nav-icon{width:50px;height:50px}
  .indoor-minimap{width:104px;height:82px}
 }
+
+/* Installed-app extras: install hint and voice */
+.install-card{display:flex;gap:12px;align-items:flex-start;margin:0 0 18px;padding:13px 12px 13px 14px;font-size:13.5px;line-height:1.45;color:var(--text-2);background:var(--yellow-tint);border:1px solid #f4c54255;border-radius:var(--radius)}
+.install-card strong{display:block;margin-bottom:2px;font-size:14px;color:var(--text)}
+.install-card .share-glyph{display:inline-block;width:15px;height:15px;margin:0 2px -2px;color:var(--accent-ink)}
+.install-card .btn{min-height:34px;margin-top:9px;padding:6px 12px;font-size:13.5px}
+.install-close{flex:none;display:grid;place-items:center;width:30px;height:30px;margin:-4px -4px 0 auto;padding:0;color:var(--muted);background:transparent;border:0;border-radius:8px;cursor:pointer}
+.install-close svg{width:16px;height:16px}
+.voice-button{display:grid;place-items:center;width:40px;height:40px;flex:none;padding:0;color:var(--text-2);background:var(--surface-2);border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.voice-button svg{width:19px;height:19px}
+.voice-button[aria-pressed=true]{color:var(--on-yellow);background:var(--yellow);border-color:var(--yellow);animation:listen 1.2s ease-in-out infinite}
+@keyframes listen{50%{box-shadow:0 0 0 6px var(--yellow-tint)}}
+.voice-toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));z-index:60;max-width:min(420px,calc(100vw - 32px));padding:11px 16px;font-size:14px;color:var(--text);background:var(--popover);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);transform:translateX(-50%)}
+html.ios .app-get{display:none}
